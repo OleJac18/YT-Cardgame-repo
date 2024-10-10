@@ -19,9 +19,12 @@ public class ConnectionManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnectedCallback;
-        NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnectedCallback;
-        NetworkManager.Singleton.OnServerStopped -= OnServerStopped;
+        if (NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnectedCallback;
+            NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnectedCallback;
+            NetworkManager.Singleton.OnServerStopped -= OnServerStopped;
+        }
     }
 
     private void OnClientConnectedCallback(ulong clientId)
