@@ -251,6 +251,7 @@ GameObject:
   - component: {fileID: 78719669}
   - component: {fileID: 78719668}
   - component: {fileID: 78719667}
+  - component: {fileID: 78719670}
   m_Layer: 5
   m_Name: Card
   m_TagString: Untagged
@@ -332,6 +333,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 78719665}
   m_CullTransparentMesh: 1
+--- !u!114 &78719670
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 78719665}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_EffectColor: {r: 0.084208794, g: 0.5849056, b: 0.025382632, a: 0.5}
+  m_EffectDistance: {x: 7.5, y: 7.5}
+  m_UseGraphicAlpha: 1
 --- !u!1 &172784344
 GameObject:
   m_ObjectHideFlags: 0
