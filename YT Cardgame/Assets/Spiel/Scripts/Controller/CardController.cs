@@ -9,6 +9,8 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     [SerializeField] private TextMeshProUGUI numberTextBottomRight;
     [SerializeField] private GameObject cardBackImage;
 
+    [SerializeField] private Card _card;
+
     private Outline _outline;
     private Vector3 _originalScale;
     private Vector3 _hoverScale;
@@ -18,13 +20,37 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         _outline = this.GetComponent<Outline>();
         _originalScale = Vector3.one;
         _hoverScale = new Vector3(1.1f, 1.1f, 1f);
+        _card = new Card(13, Card.Stack.NONE);
     }
 
-    // Start is called before the first frame update
-    void Start()
+    public int CardNumber
     {
-        numberTextTopLeft.text = "1";
-        numberTextBottomRight.text = "1";
+        get { return _card.number; }
+        set
+        {
+            if (_card.number != value)
+            {
+                _card.number = value;
+                UpdateCardNumber();
+            }
+        }
+    }
+
+    private void UpdateCardNumber()
+    {
+        string cardNumber = _card.number.ToString();
+        numberTextTopLeft.text = cardNumber;
+        numberTextBottomRight.text = cardNumber;
+    }
+
+    public void SetCorrespondingDeck(Card.Stack deckType)
+    {
+        _card.correspondingDeck = deckType;
+    }
+
+    public void SetCardBackImageVisibility(bool visible)
+    {
+        cardBackImage.SetActive(visible);
     }
 
     public void OnPointerEnter(PointerEventData eventData)
