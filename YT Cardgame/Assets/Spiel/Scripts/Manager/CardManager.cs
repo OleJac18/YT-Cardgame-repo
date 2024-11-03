@@ -36,16 +36,17 @@ public class CardManager : MonoBehaviour
 
     private void SpawnCard(int topCardNumber)
     {
-        GameObject spawnedCard = Instantiate(_cardPrefab, _spawnCardDeckPos.transform.position, _spawnCardDeckPos.transform.rotation);
+        GameObject spawnCard = Instantiate(_cardPrefab, _spawnCardDeckPos.transform.position, _spawnCardDeckPos.transform.rotation);
 
-        spawnedCard.transform.SetParent(_spawnCardDeckPos.transform.parent);
-        spawnedCard.transform.localScale = Vector3.one;
+        spawnCard.transform.SetParent(_spawnCardDeckPos.transform.parent);
+        spawnCard.transform.localScale = Vector3.one;
 
-        CardController controller = spawnedCard.GetComponent<CardController>();
-        controller.SetCardBackImageVisibility(true);
+        CardController controller = spawnCard.GetComponent<CardController>();
         controller.SetCorrespondingDeck(Card.Stack.CARDDECK);
+        controller.SetCardBackImageVisibility(true);
         controller.CardNumber = topCardNumber;
 
-        LeanTween.move(spawnedCard, new Vector3(300, 300, 0), 0.5f);
+        LeanTween.move(spawnCard, new Vector3(300, 300, 0), 0.5f);
     }
+
 }

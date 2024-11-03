@@ -9,6 +9,6 @@ public class CardDeckUI : MonoBehaviour, IPointerClickHandler
     public void OnPointerClick(PointerEventData eventData)
     {
         OnCardDeckClicked?.Invoke();
-        Debug.Log("CardDeck clicked.");
+        Debug.Log("CardDeck geklickt.");
     }
 }

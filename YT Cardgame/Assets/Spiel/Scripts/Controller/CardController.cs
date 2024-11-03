@@ -8,7 +8,6 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     [SerializeField] private TextMeshProUGUI numberTextTopLeft;
     [SerializeField] private TextMeshProUGUI numberTextBottomRight;
     [SerializeField] private GameObject cardBackImage;
-
     [SerializeField] private Card _card;
 
     private Outline _outline;
@@ -43,9 +42,9 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         numberTextBottomRight.text = cardNumber;
     }
 
-    public void SetCorrespondingDeck(Card.Stack deckType)
+    public void SetCorrespondingDeck(Card.Stack decktype)
     {
-        _card.correspondingDeck = deckType;
+        _card.correspondingDeck = decktype;
     }
 
     public void SetCardBackImageVisibility(bool visible)
