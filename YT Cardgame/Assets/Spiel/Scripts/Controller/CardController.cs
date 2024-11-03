@@ -10,6 +10,9 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     [SerializeField] private GameObject cardBackImage;
     [SerializeField] private Card _card;
 
+    public bool canHover = false;
+    public bool isSelectable = false;
+
     private Outline _outline;
     private Vector3 _originalScale;
     private Vector3 _hoverScale;
@@ -54,21 +57,25 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        Debug.Log("Ich habe die Maus auf die Karte bewegt.");
+        // Wenn nicht gehovert werden darf, return
+        if (!canHover) return;
 
         this.transform.localScale = _hoverScale;
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        Debug.Log("Ich habe die Maus von der Karte herunter bewegt.");
+        // Wenn nicht gehovert werden darf, return
+        if (!canHover) return;
 
         this.transform.localScale = _originalScale;
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
-        Debug.Log("Ich habe die Karte angeklickt.");
+        // Wenn nicht gehovert werden darf, return
+        if (!isSelectable) return;
+
         //SelectionAnimation();
         FlipCardAnimation();
     }

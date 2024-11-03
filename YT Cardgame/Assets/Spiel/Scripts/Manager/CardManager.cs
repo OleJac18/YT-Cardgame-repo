@@ -6,6 +6,8 @@ public class CardManager : MonoBehaviour
 {
     [SerializeField] private GameObject _cardPrefab;
     [SerializeField] private GameObject _spawnCardDeckPos;
+    [SerializeField] private GameObject _spawnCardPlayerPos;
+    [SerializeField] private GameObject _spawnCardEnemyPos;
 
 
     [SerializeField] private CardStack _cardStack;
@@ -20,13 +22,19 @@ public class CardManager : MonoBehaviour
         CardDeckUI.OnCardDeckClicked += HandleCardDeckClicked;
     }
 
+    private void OnDestroy()
+    {
+        CardDeckUI.OnCardDeckClicked -= HandleCardDeckClicked;
+    }
+
     private void HandleCardDeckClicked()
     {
         int drawnCard = _cardStack.DrawTopCard();
 
         if (drawnCard != 100)
         {
-            SpawnCard(drawnCard);
+            // Spawned die oberste Karte vom Kartenstapel
+            SpawnCard(drawnCard, _spawnCardDeckPos, _spawnCardDeckPos.transform.parent, Card.Stack.CARDDECK, true, false, true);
         }
         else
         {
@@ -34,19 +42,40 @@ public class CardManager : MonoBehaviour
         }
     }
 
-    private void SpawnCard(int topCardNumber)
+    public void ServFirstCards()
     {
-        GameObject spawnCard = Instantiate(_cardPrefab, _spawnCardDeckPos.transform.position, _spawnCardDeckPos.transform.rotation);
+        for (int i = 0; i < 4; i++)
+        {
+            int drawnCard = _cardStack.DrawTopCard();
 
-        spawnCard.transform.SetParent(_spawnCardDeckPos.transform.parent);
+            if (drawnCard != 100)
+            {
+                // Spawned die Spielerkarten
+                SpawnCard(drawnCard, _spawnCardPlayerPos, _spawnCardPlayerPos.transform, Card.Stack.PLAYERCARD, false, true, true);
+
+                // Spawned die Gegnerkarten
+                SpawnCard(99, _spawnCardEnemyPos, _spawnCardEnemyPos.transform, Card.Stack.ENEMYCARD, true, false, false);
+            }
+            else
+            {
+                Debug.Log("Kartenstapel ist leer.");
+            }
+        }
+    }
+
+    private void SpawnCard(int cardNumber, GameObject targetPos, Transform parent, Card.Stack corresDeck, bool backCardIsVisible, bool canHover, bool isSelectable)
+    {
+        GameObject spawnCard = Instantiate(_cardPrefab, targetPos.transform.position, targetPos.transform.rotation);
+
+        spawnCard.transform.SetParent(parent);
         spawnCard.transform.localScale = Vector3.one;
 
         CardController controller = spawnCard.GetComponent<CardController>();
-        controller.SetCorrespondingDeck(Card.Stack.CARDDECK);
-        controller.SetCardBackImageVisibility(true);
-        controller.CardNumber = topCardNumber;
-
-        LeanTween.move(spawnCard, new Vector3(300, 300, 0), 0.5f);
+        controller.SetCorrespondingDeck(corresDeck);
+        controller.SetCardBackImageVisibility(backCardIsVisible);
+        controller.CardNumber = cardNumber;
+        controller.canHover = canHover;
+        controller.isSelectable = isSelectable;
     }
 
 }
