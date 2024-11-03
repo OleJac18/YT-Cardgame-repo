@@ -1,9 +1,12 @@
+using System;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class ConnectionManager : MonoBehaviour
 {
+    public static event Action<ulong> ClientConnectedEvent;
+
     private void Awake()
     {
         DontDestroyOnLoad(gameObject);
@@ -30,6 +33,7 @@ public class ConnectionManager : MonoBehaviour
     private void OnClientConnectedCallback(ulong clientId)
     {
         Debug.Log("Client" + clientId + "connected");
+        ClientConnectedEvent?.Invoke(clientId);
     }
 
     private void OnClientDisconnectedCallback(ulong clientId)
