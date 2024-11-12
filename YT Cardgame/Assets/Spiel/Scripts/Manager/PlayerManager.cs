@@ -44,4 +44,9 @@ public class PlayerManager : MonoBehaviour
             Debug.Log("ID: " + id + ", Name: " + player.name + ", Level: " + player.score);
         }
     }
+
+    public List<ulong> GetConnectedClientIds()
+    {
+        return new List<ulong>(_playerDataDict.Keys);
+    }
 }

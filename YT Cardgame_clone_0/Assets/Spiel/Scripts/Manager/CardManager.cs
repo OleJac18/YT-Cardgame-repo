@@ -27,6 +27,11 @@ public class CardManager : MonoBehaviour
         CardDeckUI.OnCardDeckClicked -= HandleCardDeckClicked;
     }
 
+    public int DrawTopCard()
+    {
+        return _cardStack.DrawTopCard();
+    }
+
     private void HandleCardDeckClicked()
     {
         int drawnCard = _cardStack.DrawTopCard();
@@ -42,24 +47,15 @@ public class CardManager : MonoBehaviour
         }
     }
 
-    public void ServFirstCards()
+    public void ServFirstCards(int[] playerCards)
     {
         for (int i = 0; i < 4; i++)
         {
-            int drawnCard = _cardStack.DrawTopCard();
+            // Spawned die Spielerkarten
+            SpawnCard(playerCards[i], _spawnCardPlayerPos, _spawnCardPlayerPos.transform, Card.Stack.PLAYERCARD, false, true, true);
 
-            if (drawnCard != 100)
-            {
-                // Spawned die Spielerkarten
-                SpawnCard(drawnCard, _spawnCardPlayerPos, _spawnCardPlayerPos.transform, Card.Stack.PLAYERCARD, false, true, true);
-
-                // Spawned die Gegnerkarten
-                SpawnCard(99, _spawnCardEnemyPos, _spawnCardEnemyPos.transform, Card.Stack.ENEMYCARD, true, false, false);
-            }
-            else
-            {
-                Debug.Log("Kartenstapel ist leer.");
-            }
+            // Spawned die Gegnerkarten
+            SpawnCard(99, _spawnCardEnemyPos, _spawnCardEnemyPos.transform, Card.Stack.ENEMYCARD, true, false, false);
         }
     }
 
