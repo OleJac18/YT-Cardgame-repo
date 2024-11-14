@@ -33,6 +33,8 @@ public class ConnectionManager : MonoBehaviour
     private void OnClientConnectedCallback(ulong clientId)
     {
         Debug.Log("Client" + clientId + "connected");
+
+        if (!NetworkManager.Singleton.IsServer) return;
         ClientConnectedEvent?.Invoke(clientId);
     }
 

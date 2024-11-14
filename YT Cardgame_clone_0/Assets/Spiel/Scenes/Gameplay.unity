@@ -2565,6 +2565,7 @@ MonoBehaviour:
   _spawnCardDeckPos: {fileID: 585810885}
   _spawnCardPlayerPos: {fileID: 832356472}
   _spawnCardEnemyPos: {fileID: 453372982}
+  topCardNumber: -1
   _cardStack:
     stack: []
 --- !u!4 &1935967951

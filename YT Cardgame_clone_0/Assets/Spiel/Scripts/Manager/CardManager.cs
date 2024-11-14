@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
 public class CardManager : MonoBehaviour
@@ -9,22 +10,20 @@ public class CardManager : MonoBehaviour
     [SerializeField] private GameObject _spawnCardPlayerPos;
     [SerializeField] private GameObject _spawnCardEnemyPos;
 
+    public int topCardNumber = -1;
 
     [SerializeField] private CardStack _cardStack;
 
     // Start is called before the first frame update
     void Start()
     {
-        _cardStack = new CardStack();
-        _cardStack.CreateDeck();
-        _cardStack.ShuffleCards();
 
-        CardDeckUI.OnCardDeckClicked += HandleCardDeckClicked;
-    }
-
-    private void OnDestroy()
-    {
-        CardDeckUI.OnCardDeckClicked -= HandleCardDeckClicked;
+        if(NetworkManager.Singleton.IsServer)
+        {
+            _cardStack = new CardStack();
+            _cardStack.CreateDeck();
+            _cardStack.ShuffleCards();
+        }
     }
 
     public int DrawTopCard()
@@ -32,19 +31,10 @@ public class CardManager : MonoBehaviour
         return _cardStack.DrawTopCard();
     }
 
-    private void HandleCardDeckClicked()
+    public void SpawnTopCardFromCardDeck(int cardNumber)
     {
-        int drawnCard = _cardStack.DrawTopCard();
-
-        if (drawnCard != 100)
-        {
-            // Spawned die oberste Karte vom Kartenstapel
-            SpawnCard(drawnCard, _spawnCardDeckPos, _spawnCardDeckPos.transform.parent, Card.Stack.CARDDECK, true, false, true);
-        }
-        else
-        {
-            Debug.Log("Kartenstapel ist leer.");
-        }
+        // Spawned die oberste Karte vom Kartenstapel
+            SpawnCard(cardNumber, _spawnCardDeckPos, _spawnCardDeckPos.transform.parent, Card.Stack.CARDDECK, true, true, true);
     }
 
     public void ServFirstCards(int[] playerCards)

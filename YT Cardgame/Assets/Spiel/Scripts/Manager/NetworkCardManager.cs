@@ -15,12 +15,19 @@ public class NetworkCardManager : NetworkBehaviour
         _cardManager = FindObjectOfType<CardManager>();
 
         ConnectionManager.ClientConnectedEvent += CheckAllClientsConnected;
+        CardDeckUI.OnCardDeckClicked += HandleCardDeckClicked;
     }
 
     public override void OnDestroy()
     {
         base.OnDestroy();
         ConnectionManager.ClientConnectedEvent -= CheckAllClientsConnected;
+        CardDeckUI.OnCardDeckClicked -= HandleCardDeckClicked;
+    }
+
+    private void HandleCardDeckClicked()
+    {
+        DrawAndSpawnTopCardServerRpc(NetworkManager.LocalClientId);
     }
 
     private void CheckAllClientsConnected(ulong clientId)
@@ -63,5 +70,27 @@ public class NetworkCardManager : NetworkBehaviour
     {
         Debug.Log("Ich bin in der SpawnCardsClientRpc Function");
         _cardManager.ServFirstCards(playerCards);
+    }
+
+    [Rpc(SendTo.Server)]
+    private void DrawAndSpawnTopCardServerRpc(ulong clientId)
+    {
+        _cardManager.topCardNumber = _cardManager.DrawTopCard();
+
+        if (_cardManager.topCardNumber != 100)
+        {
+            // Spawned die oberste Karte vom Kartenstapel
+            SpawnCardDeckCardSpecificClientRpc(_cardManager.topCardNumber, RpcTarget.Single(clientId, RpcTargetUse.Temp));
+        }
+        else
+        {
+            Debug.Log("Kartenstapel ist leer.");
+        }
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    private void SpawnCardDeckCardSpecificClientRpc(int cardNumber, RpcParams rpcParams = default)
+    {
+        _cardManager.SpawnTopCardFromCardDeck(cardNumber);
     }
 }
