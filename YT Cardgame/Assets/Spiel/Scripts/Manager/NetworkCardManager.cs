@@ -6,6 +6,7 @@ using UnityEngine;
 public class NetworkCardManager : NetworkBehaviour
 {
     public GameObject _playerDrawnCardPos;
+    public GameObject _enemyDrawnCardPos;
 
     private PlayerManager _playerManager;
     private CardManager _cardManager;
@@ -93,6 +94,14 @@ public class NetworkCardManager : NetworkBehaviour
     [Rpc(SendTo.SpecifiedInParams)]
     private void SpawnCardDeckCardSpecificClientRpc(int cardNumber, RpcParams rpcParams = default)
     {
-        _cardManager.SpawnAndMoveCardToDrawnCardPos(cardNumber, _playerDrawnCardPos.transform);
+        _cardManager.SpawnAndMoveCardToDrawnCardPos(cardNumber, _playerDrawnCardPos.transform, true);
+
+        SpawnCardDeckCardClientRpc();
+    }
+
+    [Rpc(SendTo.NotMe)]
+    private void SpawnCardDeckCardClientRpc()
+    {
+        _cardManager.SpawnAndMoveCardToDrawnCardPos(99, _enemyDrawnCardPos.transform, false);
     }
 }

@@ -9,6 +9,7 @@ public class CardManager : MonoBehaviour
     [SerializeField] private GameObject _spawnCardDeckPos;
     [SerializeField] private GameObject _spawnCardPlayerPos;
     [SerializeField] private GameObject _spawnCardEnemyPos;
+    [SerializeField] private GameObject _showDrawnCardPos;
 
     public int topCardNumber = -1;
 
@@ -33,12 +34,21 @@ public class CardManager : MonoBehaviour
         return _cardStack.DrawTopCard();
     }
 
-    public void SpawnAndMoveCardToDrawnCardPos(int cardNumber, Transform target)
+    public void SpawnAndMoveCardToDrawnCardPos(int cardNumber, Transform target, bool flipAtDestination)
     {
         // Spawned die oberste Karte vom Kartenstapel
-        _cardDeckCard = SpawnCard(cardNumber, _spawnCardDeckPos, _spawnCardDeckPos.transform.parent, Card.Stack.CARDDECK, true, true, true);
+        _cardDeckCard = SpawnCard(cardNumber, _spawnCardDeckPos, _spawnCardDeckPos.transform.parent, Card.Stack.CARDDECK, true, false, false);
 
-        MoveToDrawnPosition(target);
+        if (flipAtDestination)
+        {
+            FlipAndMoveCard(target);
+        }
+        else
+        {
+            MoveToDrawnPosition(target);
+        }
+
+
     }
 
     public void ServFirstCards(int[] playerCards)
@@ -70,9 +80,31 @@ public class CardManager : MonoBehaviour
         return spawnCard;
     }
 
+    private void FlipAndMoveCard(Transform target)
+    {
+        CardController controller = _cardDeckCard.GetComponent<CardController>();
+
+        LeanTween.move(_cardDeckCard, _showDrawnCardPos.transform, 0.5f);
+        LeanTween.scale(_cardDeckCard, Vector3.one * 1.2f, 0.5f);
+
+        LeanTween.rotateX(_cardDeckCard, 90.0f, 0.25f).setOnComplete(() =>
+        {
+            controller.SetCardBackImageVisibility(false);
+            LeanTween.rotateX(_cardDeckCard, 0.0f, 0.25f).setOnComplete(() =>
+            {
+                LeanTween.delayedCall(0.5f, () =>
+                {
+                    MoveToDrawnPosition(target);
+                });
+            });
+        });
+    }
+
     private void MoveToDrawnPosition(Transform target)
     {
         Vector3 targetPos = GetCenteredPosition(target);
+
+        LeanTween.scale(_cardDeckCard, Vector3.one, 0.5f);
 
         LeanTween.move(_cardDeckCard, targetPos, 0.5f).setOnComplete(() =>
         {

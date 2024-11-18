@@ -999,6 +999,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _playerDrawnCardPos: {fileID: 817427805}
+  _enemyDrawnCardPos: {fileID: 1359747364}
 --- !u!4 &636591348
 Transform:
   m_ObjectHideFlags: 0
@@ -1499,6 +1500,41 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 832356472}
   m_CullTransparentMesh: 1
+--- !u!1 &934806026
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 934806027}
+  m_Layer: 5
+  m_Name: ShowDrawnCardPos
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &934806027
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 934806026}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1580363189}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -207, y: 179}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1064994257
 GameObject:
   m_ObjectHideFlags: 0
@@ -2009,6 +2045,7 @@ RectTransform:
   - {fileID: 832356473}
   - {fileID: 817427806}
   - {fileID: 1180761884}
+  - {fileID: 934806027}
   m_Father: {fileID: 61714480}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
@@ -2566,6 +2603,7 @@ MonoBehaviour:
   _spawnCardDeckPos: {fileID: 585810885}
   _spawnCardPlayerPos: {fileID: 832356472}
   _spawnCardEnemyPos: {fileID: 453372982}
+  _showDrawnCardPos: {fileID: 934806026}
   topCardNumber: -1
   _cardStack:
     stack: []
