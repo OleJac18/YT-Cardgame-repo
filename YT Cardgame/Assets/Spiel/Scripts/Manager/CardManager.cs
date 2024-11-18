@@ -14,11 +14,13 @@ public class CardManager : MonoBehaviour
 
     [SerializeField] private CardStack _cardStack;
 
+    private GameObject _cardDeckCard;
+
     // Start is called before the first frame update
     void Start()
     {
 
-        if(NetworkManager.Singleton.IsServer)
+        if (NetworkManager.Singleton.IsServer)
         {
             _cardStack = new CardStack();
             _cardStack.CreateDeck();
@@ -31,10 +33,12 @@ public class CardManager : MonoBehaviour
         return _cardStack.DrawTopCard();
     }
 
-    public void SpawnTopCardFromCardDeck(int cardNumber)
+    public void SpawnAndMoveCardToDrawnCardPos(int cardNumber, Transform target)
     {
         // Spawned die oberste Karte vom Kartenstapel
-            SpawnCard(cardNumber, _spawnCardDeckPos, _spawnCardDeckPos.transform.parent, Card.Stack.CARDDECK, true, true, true);
+        _cardDeckCard = SpawnCard(cardNumber, _spawnCardDeckPos, _spawnCardDeckPos.transform.parent, Card.Stack.CARDDECK, true, true, true);
+
+        MoveToDrawnPosition(target);
     }
 
     public void ServFirstCards(int[] playerCards)
@@ -49,7 +53,7 @@ public class CardManager : MonoBehaviour
         }
     }
 
-    private void SpawnCard(int cardNumber, GameObject targetPos, Transform parent, Card.Stack corresDeck, bool backCardIsVisible, bool canHover, bool isSelectable)
+    private GameObject SpawnCard(int cardNumber, GameObject targetPos, Transform parent, Card.Stack corresDeck, bool backCardIsVisible, bool canHover, bool isSelectable)
     {
         GameObject spawnCard = Instantiate(_cardPrefab, targetPos.transform.position, targetPos.transform.rotation);
 
@@ -62,6 +66,30 @@ public class CardManager : MonoBehaviour
         controller.CardNumber = cardNumber;
         controller.canHover = canHover;
         controller.isSelectable = isSelectable;
+
+        return spawnCard;
+    }
+
+    private void MoveToDrawnPosition(Transform target)
+    {
+        Vector3 targetPos = GetCenteredPosition(target);
+
+        LeanTween.move(_cardDeckCard, targetPos, 0.5f).setOnComplete(() =>
+        {
+            _cardDeckCard.transform.SetParent(target);
+        });
+    }
+
+    private Vector3 GetCenteredPosition(Transform target)
+    {
+        RectTransform rectTransform = target.GetComponent<RectTransform>();
+
+        float width = rectTransform.rect.width;
+        float height = rectTransform.rect.height;
+
+        Vector3 centerOffset = new Vector3(width * (0.5f - rectTransform.pivot.x), height * (0.5f - rectTransform.pivot.y), 0);
+
+        return rectTransform.TransformPoint(centerOffset);
     }
 
 }

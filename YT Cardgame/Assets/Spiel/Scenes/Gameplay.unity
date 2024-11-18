@@ -998,6 +998,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e313a0961674908429a8e658d59b78be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _playerDrawnCardPos: {fileID: 817427805}
 --- !u!4 &636591348
 Transform:
   m_ObjectHideFlags: 0
