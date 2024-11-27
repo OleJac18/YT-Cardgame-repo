@@ -19,6 +19,8 @@ public class NetworkCardManager : NetworkBehaviour
 
         ConnectionManager.ClientConnectedEvent += CheckAllClientsConnected;
         CardDeckUI.OnCardDeckClicked += HandleCardDeckClicked;
+        CardController.OnCardHoveredEvent += SetEnemyCardHoverEffectClientRpc;
+        CardController.OnCardClickedEvent += SetEnemyCardClickedClientRpc;
     }
 
     public override void OnDestroy()
@@ -26,6 +28,8 @@ public class NetworkCardManager : NetworkBehaviour
         base.OnDestroy();
         ConnectionManager.ClientConnectedEvent -= CheckAllClientsConnected;
         CardDeckUI.OnCardDeckClicked -= HandleCardDeckClicked;
+        CardController.OnCardHoveredEvent -= SetEnemyCardHoverEffectClientRpc;
+        CardController.OnCardClickedEvent -= SetEnemyCardClickedClientRpc;
     }
 
     private void HandleCardDeckClicked()
@@ -103,5 +107,19 @@ public class NetworkCardManager : NetworkBehaviour
     private void SpawnCardDeckCardClientRpc()
     {
         _cardManager.SpawnAndMoveCardToDrawnCardPos(99, _enemyDrawnCardPos.transform, false);
+    }
+
+    [Rpc(SendTo.NotMe)]
+    private void SetEnemyCardHoverEffectClientRpc(Vector3 scaleBy, int index)
+    {
+        if (IsServer && !IsHost) return;
+        _cardManager.SetEnemyCardHoverEffect(scaleBy, index);
+    }
+
+    [Rpc(SendTo.NotMe)]
+    private void SetEnemyCardClickedClientRpc(bool isSelected, int index)
+    {
+        if (IsServer && !IsHost) return;
+        _cardManager.SetEnemyCardClicked(isSelected, index);
     }
 }

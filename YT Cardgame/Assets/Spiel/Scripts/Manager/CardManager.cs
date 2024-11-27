@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CardManager : MonoBehaviour
 {
@@ -60,6 +61,27 @@ public class CardManager : MonoBehaviour
 
             // Spawned die Gegnerkarten
             SpawnCard(99, _spawnCardEnemyPos, _spawnCardEnemyPos.transform, Card.Stack.ENEMYCARD, true, false, false);
+        }
+    }
+
+    public void SetEnemyCardHoverEffect(Vector3 scaleBy, int index)
+    {
+        GameObject card = _spawnCardEnemyPos.transform.GetChild(index).gameObject;
+        card.transform.localScale = scaleBy;
+    }
+
+    public void SetEnemyCardClicked(bool isSelected, int index)
+    {
+        GameObject card = _spawnCardEnemyPos.transform.GetChild(index).gameObject;
+        Outline outline = card.GetComponent<Outline>();
+
+        if (outline == null)
+        {
+            Debug.Log("Das Objekt hat keine Outline");
+        }
+        else
+        {
+            outline.enabled = isSelected;
         }
     }
 

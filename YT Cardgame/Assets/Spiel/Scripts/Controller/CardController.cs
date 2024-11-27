@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -9,6 +10,9 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     [SerializeField] private TextMeshProUGUI numberTextBottomRight;
     [SerializeField] private GameObject cardBackImage;
     [SerializeField] private Card _card;
+
+    public static event Action<Vector3, int> OnCardHoveredEvent;
+    public static event Action<bool, int> OnCardClickedEvent;
 
     public bool canHover = false;
     public bool isSelectable = false;
@@ -61,6 +65,9 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         if (!canHover) return;
 
         this.transform.localScale = _hoverScale;
+
+        int index = this.transform.GetSiblingIndex();
+        OnCardHoveredEvent?.Invoke(_hoverScale, index);
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -69,6 +76,9 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         if (!canHover) return;
 
         this.transform.localScale = _originalScale;
+
+        int index = this.transform.GetSiblingIndex();
+        OnCardHoveredEvent?.Invoke(_originalScale, index);
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -76,8 +86,8 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         // Wenn nicht gehovert werden darf, return
         if (!isSelectable) return;
 
-        //SelectionAnimation();
-        FlipCardAnimation();
+        SelectionAnimation();
+        //FlipCardAnimation();
     }
 
     private void SelectionAnimation()
@@ -89,6 +99,9 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         }
 
         _outline.enabled = !_outline.enabled;
+
+        int index = this.transform.GetSiblingIndex();
+        OnCardClickedEvent?.Invoke(_outline.enabled, index);
     }
 
     private void FlipCardAnimation()
