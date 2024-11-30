@@ -45,6 +45,10 @@ public class NetworkCardManager : NetworkBehaviour
             if (clientIds.Count < 2) return;
 
             DistributeCardsToPlayers(clientIds);
+
+            int drawnCard = _cardManager.DrawTopCard();
+            Debug.Log("Ich habe die Karte " + drawnCard + " für das Graveyard gezogen.");
+            SpawnGraveyardCardClientAndHostRpc(drawnCard);
         }
     }
 
@@ -121,5 +125,11 @@ public class NetworkCardManager : NetworkBehaviour
     {
         if (IsServer && !IsHost) return;
         _cardManager.SetEnemyCardClicked(isSelected, index);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void SpawnGraveyardCardClientAndHostRpc(int cardNumber)
+    {
+        _cardManager.SpawnAndMoveGraveyardCard(cardNumber);
     }
 }

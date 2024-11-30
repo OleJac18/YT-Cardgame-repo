@@ -86,8 +86,10 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         // Wenn nicht gehovert werden darf, return
         if (!isSelectable) return;
 
+        if (_card.correspondingDeck == Card.Stack.GRAVEYARD) return;
+
         SelectionAnimation();
-        //FlipCardAnimation();
+        //FlipCardAnimation(!cardBackImage.activeSelf);
     }
 
     private void SelectionAnimation()
@@ -104,11 +106,11 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         OnCardClickedEvent?.Invoke(_outline.enabled, index);
     }
 
-    private void FlipCardAnimation()
+    public void FlipCardAnimation(bool showCardBack)
     {
         LeanTween.rotateY(this.gameObject, 90.0f, 0.25f).setOnComplete(() =>
         {
-            cardBackImage.SetActive(!cardBackImage.activeSelf);
+            cardBackImage.SetActive(showCardBack);
             LeanTween.rotateY(this.gameObject, 0.0f, 0.25f);
         });
     }

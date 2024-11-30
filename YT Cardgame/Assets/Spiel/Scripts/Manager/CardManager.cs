@@ -11,12 +11,14 @@ public class CardManager : MonoBehaviour
     [SerializeField] private GameObject _spawnCardPlayerPos;
     [SerializeField] private GameObject _spawnCardEnemyPos;
     [SerializeField] private GameObject _showDrawnCardPos;
+    [SerializeField] private GameObject _graveyardPos;
 
     public int topCardNumber = -1;
 
     [SerializeField] private CardStack _cardStack;
 
     private GameObject _cardDeckCard;
+    private GameObject _graveyardCard;
 
     // Start is called before the first frame update
     void Start()
@@ -83,6 +85,21 @@ public class CardManager : MonoBehaviour
         {
             outline.enabled = isSelected;
         }
+    }
+
+    public void SpawnAndMoveGraveyardCard(int cardNumber)
+    {
+        _graveyardCard = SpawnCard(cardNumber, _spawnCardDeckPos, _graveyardPos.transform.parent, Card.Stack.GRAVEYARD, true, false, true);
+
+        CardController controller = _graveyardCard.GetComponent<CardController>();
+
+        Vector3 target = GetCenteredPosition(_graveyardPos.transform);
+
+        LeanTween.move(_graveyardCard, target, 0.5f).setOnComplete(() =>
+        {
+            _graveyardCard.transform.SetParent(_graveyardPos.transform);
+            controller.FlipCardAnimation(false);
+        });
     }
 
     private GameObject SpawnCard(int cardNumber, GameObject targetPos, Transform parent, Card.Stack corresDeck, bool backCardIsVisible, bool canHover, bool isSelectable)
