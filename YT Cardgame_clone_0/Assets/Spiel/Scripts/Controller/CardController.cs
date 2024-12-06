@@ -13,6 +13,7 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 
     public static event Action<Vector3, int> OnCardHoveredEvent;
     public static event Action<bool, int> OnCardClickedEvent;
+    public static event Action OnGraveyardCardClickedEvent;
 
     public bool canHover = false;
     public bool isSelectable = false;
@@ -86,10 +87,15 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         // Wenn nicht gehovert werden darf, return
         if (!isSelectable) return;
 
-        if (_card.correspondingDeck == Card.Stack.GRAVEYARD) return;
-
-        SelectionAnimation();
-        //FlipCardAnimation(!cardBackImage.activeSelf);
+        if (_card.correspondingDeck == Card.Stack.GRAVEYARD)
+        {
+            OnGraveyardCardClickedEvent?.Invoke();
+        }
+        else
+        {
+            SelectionAnimation();
+            //FlipCardAnimation(!cardBackImage.activeSelf);
+        }
     }
 
     private void SelectionAnimation()

@@ -12,6 +12,7 @@ public class CardManager : MonoBehaviour
     [SerializeField] private GameObject _spawnCardEnemyPos;
     [SerializeField] private GameObject _showDrawnCardPos;
     [SerializeField] private GameObject _graveyardPos;
+    [SerializeField] private GameObject _playerDrawnCardPos;
 
     public int topCardNumber = -1;
 
@@ -30,6 +31,13 @@ public class CardManager : MonoBehaviour
             _cardStack.CreateDeck();
             _cardStack.ShuffleCards();
         }
+
+        CardController.OnGraveyardCardClickedEvent += MoveGraveyardCardToPlayerPos;
+    }
+
+    private void OnDestroy()
+    {
+        CardController.OnGraveyardCardClickedEvent -= MoveGraveyardCardToPlayerPos;
     }
 
     public int DrawTopCard()
@@ -44,11 +52,11 @@ public class CardManager : MonoBehaviour
 
         if (flipAtDestination)
         {
-            FlipAndMoveCard(target);
+            FlipAndMoveCard(_cardDeckCard, target);
         }
         else
         {
-            MoveToDrawnPosition(target);
+            MoveToDrawnPosition(_cardDeckCard, target);
         }
 
 
@@ -119,35 +127,35 @@ public class CardManager : MonoBehaviour
         return spawnCard;
     }
 
-    private void FlipAndMoveCard(Transform target)
+    private void FlipAndMoveCard(GameObject objectToMove, Transform target)
     {
-        CardController controller = _cardDeckCard.GetComponent<CardController>();
+        CardController controller = objectToMove.GetComponent<CardController>();
 
-        LeanTween.move(_cardDeckCard, _showDrawnCardPos.transform, 0.5f);
-        LeanTween.scale(_cardDeckCard, Vector3.one * 1.2f, 0.5f);
+        LeanTween.move(objectToMove, _showDrawnCardPos.transform, 0.5f);
+        LeanTween.scale(objectToMove, Vector3.one * 1.2f, 0.5f);
 
-        LeanTween.rotateX(_cardDeckCard, 90.0f, 0.25f).setOnComplete(() =>
+        LeanTween.rotateX(objectToMove, 90.0f, 0.25f).setOnComplete(() =>
         {
             controller.SetCardBackImageVisibility(false);
-            LeanTween.rotateX(_cardDeckCard, 0.0f, 0.25f).setOnComplete(() =>
+            LeanTween.rotateX(objectToMove, 0.0f, 0.25f).setOnComplete(() =>
             {
                 LeanTween.delayedCall(0.5f, () =>
                 {
-                    MoveToDrawnPosition(target);
+                    MoveToDrawnPosition(objectToMove, target);
                 });
             });
         });
     }
 
-    private void MoveToDrawnPosition(Transform target)
+    private void MoveToDrawnPosition(GameObject objectToMove, Transform target)
     {
         Vector3 targetPos = GetCenteredPosition(target);
 
-        LeanTween.scale(_cardDeckCard, Vector3.one, 0.5f);
+        LeanTween.scale(objectToMove, Vector3.one, 0.5f);
 
-        LeanTween.move(_cardDeckCard, targetPos, 0.5f).setOnComplete(() =>
+        LeanTween.move(objectToMove, targetPos, 0.5f).setOnComplete(() =>
         {
-            _cardDeckCard.transform.SetParent(target);
+            objectToMove.transform.SetParent(target);
         });
     }
 
@@ -163,4 +171,16 @@ public class CardManager : MonoBehaviour
         return rectTransform.TransformPoint(centerOffset);
     }
 
+    private void MoveGraveyardCardToPlayerPos()
+    {
+        MoveGraveyardCardToDrawnPos(_playerDrawnCardPos.transform);
+    }
+
+    public void MoveGraveyardCardToDrawnPos(Transform target)
+    {
+        MoveToDrawnPosition(_graveyardCard, target);
+
+        CardController controller = _graveyardCard.GetComponent<CardController>();
+        controller.isSelectable = false;
+    }
 }

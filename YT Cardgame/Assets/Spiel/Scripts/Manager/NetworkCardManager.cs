@@ -21,6 +21,7 @@ public class NetworkCardManager : NetworkBehaviour
         CardDeckUI.OnCardDeckClicked += HandleCardDeckClicked;
         CardController.OnCardHoveredEvent += SetEnemyCardHoverEffectClientRpc;
         CardController.OnCardClickedEvent += SetEnemyCardClickedClientRpc;
+        CardController.OnGraveyardCardClickedEvent += MoveGraveyardCardToEnemyDrawnPosClientRpc;
     }
 
     public override void OnDestroy()
@@ -30,6 +31,7 @@ public class NetworkCardManager : NetworkBehaviour
         CardDeckUI.OnCardDeckClicked -= HandleCardDeckClicked;
         CardController.OnCardHoveredEvent -= SetEnemyCardHoverEffectClientRpc;
         CardController.OnCardClickedEvent -= SetEnemyCardClickedClientRpc;
+        CardController.OnGraveyardCardClickedEvent -= MoveGraveyardCardToEnemyDrawnPosClientRpc;
     }
 
     private void HandleCardDeckClicked()
@@ -131,5 +133,11 @@ public class NetworkCardManager : NetworkBehaviour
     private void SpawnGraveyardCardClientAndHostRpc(int cardNumber)
     {
         _cardManager.SpawnAndMoveGraveyardCard(cardNumber);
+    }
+
+    [Rpc(SendTo.NotMe)]
+    private void MoveGraveyardCardToEnemyDrawnPosClientRpc()
+    {
+        _cardManager.MoveGraveyardCardToDrawnPos(_enemyDrawnCardPos.transform);
     }
 }

@@ -2605,6 +2605,7 @@ MonoBehaviour:
   _spawnCardEnemyPos: {fileID: 453372982}
   _showDrawnCardPos: {fileID: 934806026}
   _graveyardPos: {fileID: 777651146}
+  _playerDrawnCardPos: {fileID: 817427805}
   topCardNumber: -1
   _cardStack:
     stack: []
