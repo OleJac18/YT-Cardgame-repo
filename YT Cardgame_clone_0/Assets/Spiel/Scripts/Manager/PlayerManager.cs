@@ -1,28 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerManager : MonoBehaviour
+public class PlayerManager
 {
     private Dictionary<ulong, Player> _playerDataDict = new Dictionary<ulong, Player>();
 
-    private void Awake()
-    {
-        DontDestroyOnLoad(this);
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        ConnectionManager.ClientConnectedEvent += AddNewPlayer;
-    }
-
-    private void OnDestroy()
-    {
-        ConnectionManager.ClientConnectedEvent -= AddNewPlayer;
-    }
-
-
-    private void AddNewPlayer(ulong clientId)
+    public void AddNewPlayer(ulong clientId)
     {
         Debug.Log("Ich will einen neuen Spieler hinzufügen");
 

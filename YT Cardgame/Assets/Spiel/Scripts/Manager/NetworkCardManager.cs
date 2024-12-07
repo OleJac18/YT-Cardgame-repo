@@ -8,16 +8,14 @@ public class NetworkCardManager : NetworkBehaviour
     public GameObject _playerDrawnCardPos;
     public GameObject _enemyDrawnCardPos;
 
-    private PlayerManager _playerManager;
     private CardManager _cardManager;
 
     // Start is called before the first frame update
     void Start()
     {
-        _playerManager = FindObjectOfType<PlayerManager>();
         _cardManager = FindObjectOfType<CardManager>();
 
-        ConnectionManager.ClientConnectedEvent += CheckAllClientsConnected;
+        GameManager.ServFirstCardsEvent += ServFirstCards;
         CardDeckUI.OnCardDeckClicked += HandleCardDeckClicked;
         CardController.OnCardHoveredEvent += SetEnemyCardHoverEffectClientRpc;
         CardController.OnCardClickedEvent += SetEnemyCardClickedClientRpc;
@@ -27,7 +25,7 @@ public class NetworkCardManager : NetworkBehaviour
     public override void OnDestroy()
     {
         base.OnDestroy();
-        ConnectionManager.ClientConnectedEvent -= CheckAllClientsConnected;
+        GameManager.ServFirstCardsEvent -= ServFirstCards;
         CardDeckUI.OnCardDeckClicked -= HandleCardDeckClicked;
         CardController.OnCardHoveredEvent -= SetEnemyCardHoverEffectClientRpc;
         CardController.OnCardClickedEvent -= SetEnemyCardClickedClientRpc;
@@ -39,19 +37,13 @@ public class NetworkCardManager : NetworkBehaviour
         DrawAndSpawnTopCardServerRpc(NetworkManager.LocalClientId);
     }
 
-    private void CheckAllClientsConnected(ulong clientId)
+    private void ServFirstCards(List<ulong> clientIds)
     {
-        if (IsServer)
-        {
-            List<ulong> clientIds = _playerManager.GetConnectedClientIds();
-            if (clientIds.Count < 2) return;
+        DistributeCardsToPlayers(clientIds);
 
-            DistributeCardsToPlayers(clientIds);
-
-            int drawnCard = _cardManager.DrawTopCard();
-            Debug.Log("Ich habe die Karte " + drawnCard + " für das Graveyard gezogen.");
-            SpawnGraveyardCardClientAndHostRpc(drawnCard);
-        }
+        int drawnCard = _cardManager.DrawTopCard();
+        Debug.Log("Ich habe die Karte " + drawnCard + " für das Graveyard gezogen.");
+        SpawnGraveyardCardClientAndHostRpc(drawnCard);
     }
 
     private void DistributeCardsToPlayers(List<ulong> clientIds)

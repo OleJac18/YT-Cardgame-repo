@@ -13,11 +13,11 @@ public class PrintButtonHandler : MonoBehaviour
 
     private void OnPrintButtonClicked()
     {
-        PlayerManager playerManager = FindObjectOfType<PlayerManager>();
+        GameManager gameManager = FindObjectOfType<GameManager>();
 
-        if (playerManager != null)
+        if (gameManager != null)
         {
-            playerManager.PrintPlayerDictionary();
+            gameManager.PrintPlayerDictionary();
         }
         else
         {
