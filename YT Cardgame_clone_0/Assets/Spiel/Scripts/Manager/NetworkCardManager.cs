@@ -37,13 +37,13 @@ public class NetworkCardManager : NetworkBehaviour
         DrawAndSpawnTopCardServerRpc(NetworkManager.LocalClientId);
     }
 
-    private void ServFirstCards(List<ulong> clientIds)
+    private void ServFirstCards(List<ulong> clientIds, ulong currentPlayerId)
     {
         DistributeCardsToPlayers(clientIds);
 
         int drawnCard = _cardManager.DrawTopCard();
         Debug.Log("Ich habe die Karte " + drawnCard + " für das Graveyard gezogen.");
-        SpawnGraveyardCardClientAndHostRpc(drawnCard);
+        SpawnGraveyardCardClientAndHostRpc(drawnCard, currentPlayerId);
     }
 
     private void DistributeCardsToPlayers(List<ulong> clientIds)
@@ -122,9 +122,13 @@ public class NetworkCardManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.ClientsAndHost)]
-    private void SpawnGraveyardCardClientAndHostRpc(int cardNumber)
+    private void SpawnGraveyardCardClientAndHostRpc(int cardNumber, ulong currentPlayerId)
     {
-        _cardManager.SpawnAndMoveGraveyardCard(cardNumber);
+        ulong localClientId = NetworkManager.Singleton.LocalClientId;
+
+        bool isSelectable = currentPlayerId == localClientId;
+
+        _cardManager.SpawnAndMoveGraveyardCard(cardNumber, isSelectable);
     }
 
     [Rpc(SendTo.NotMe)]

@@ -95,9 +95,9 @@ public class CardManager : MonoBehaviour
         }
     }
 
-    public void SpawnAndMoveGraveyardCard(int cardNumber)
+    public void SpawnAndMoveGraveyardCard(int cardNumber, bool isSelectable)
     {
-        _graveyardCard = SpawnCard(cardNumber, _spawnCardDeckPos, _graveyardPos.transform.parent, Card.Stack.GRAVEYARD, true, false, true);
+        _graveyardCard = SpawnCard(cardNumber, _spawnCardDeckPos, _graveyardPos.transform.parent, Card.Stack.GRAVEYARD, true, false, isSelectable);
 
         CardController controller = _graveyardCard.GetComponent<CardController>();
 
