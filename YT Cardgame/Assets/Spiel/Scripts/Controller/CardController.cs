@@ -1,5 +1,6 @@
 using System;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -28,6 +29,16 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         _originalScale = Vector3.one;
         _hoverScale = new Vector3(1.1f, 1.1f, 1f);
         _card = new Card(13, Card.Stack.NONE);
+    }
+
+    private void Start()
+    {
+        GameManager.Instance.currentPlayerId.OnValueChanged += OnCurrentPlayerChanged;
+    }
+
+    private void OnDestroy()
+    {
+        GameManager.Instance.currentPlayerId.OnValueChanged -= OnCurrentPlayerChanged;
     }
 
     public int CardNumber
@@ -119,5 +130,26 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
             cardBackImage.SetActive(showCardBack);
             LeanTween.rotateY(this.gameObject, 0.0f, 0.25f);
         });
+    }
+
+    private void OnCurrentPlayerChanged(ulong previousPlayerId, ulong currentPlayerId)
+    {
+        ulong localClientId = NetworkManager.Singleton.LocalClientId;
+        bool interactable = currentPlayerId == localClientId;
+
+        SetInteractableStateForSpecificDeckType(Card.Stack.PLAYERCARD, interactable);
+        SetInteractableStateForSpecificDeckType(Card.Stack.GRAVEYARD, interactable);
+    }
+
+    private void SetInteractableStateForSpecificDeckType(Card.Stack cardDeckType, bool interactable)
+    {
+        if (_card.correspondingDeck != cardDeckType) return;
+        SetInteractableState(interactable);
+    }
+
+    private void SetInteractableState(bool interactable)
+    {
+        isSelectable = interactable;
+        canHover = interactable;
     }
 }

@@ -4,17 +4,21 @@ using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {
     public static event Action<List<ulong>, ulong> ServFirstCardsEvent;
-    public static event Action<ulong> SetStartSettingsEvent;
 
     private PlayerManager _playerManager;
     private TurnManager _turnManager;
 
+    public NetworkVariable<ulong> currentPlayerId = new NetworkVariable<ulong>();
+    public static GameManager Instance { get; private set; }
+
     private void Awake()
     {
         DontDestroyOnLoad(this);
+        Instance = this;
+
         _playerManager = new PlayerManager();
         _turnManager = new TurnManager();
     }
@@ -25,9 +29,19 @@ public class GameManager : MonoBehaviour
         ConnectionManager.ClientConnectedEvent += OnClientConnected;
     }
 
-    private void OnDestroy()
+    public override void OnDestroy()
     {
+        base.OnDestroy();
         ConnectionManager.ClientConnectedEvent -= OnClientConnected;
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        if (!IsServer) return;
+
+        base.OnNetworkSpawn();
+
+        currentPlayerId.Value = 50;
     }
 
     private void Update()
@@ -35,6 +49,7 @@ public class GameManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.N))
         {
             _turnManager.NextTurn();
+            currentPlayerId.Value = _turnManager.GetCurrentPlayerId();
         }
     }
 
@@ -44,21 +59,32 @@ public class GameManager : MonoBehaviour
 
         _playerManager.AddNewPlayer(clientId);
 
-        CheckAllClientsConnected();
+        if (CheckAllClientsConnected())
+        {
+            InitializeGame();
+        }
     }
 
-    private void CheckAllClientsConnected()
+    private bool CheckAllClientsConnected()
     {
         List<ulong> clientIds = _playerManager.GetConnectedClientIds();
-        if (clientIds.Count < 2) return;
+        if (clientIds.Count < 2)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
 
+    private void InitializeGame()
+    {
         _turnManager.SetStartPlayer(_playerManager);
 
-        ulong currentPlayerId = _turnManager.GetCurrentPlayerId();
+        currentPlayerId.Value = _turnManager.GetCurrentPlayerId();
 
-        SetStartSettingsEvent?.Invoke(currentPlayerId);
-
-        ServFirstCardsEvent?.Invoke(clientIds, currentPlayerId);
+        ServFirstCardsEvent?.Invoke(_playerManager.GetConnectedClientIds(), currentPlayerId.Value);
     }
 
     public void PrintPlayerDictionary()

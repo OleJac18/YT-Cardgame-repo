@@ -10,23 +10,24 @@ public class CardDeckUI : MonoBehaviour, IPointerClickHandler
 
     public void Start()
     {
-        GameManager.SetStartSettingsEvent += SetIsSelectableState;
+        GameManager.Instance.currentPlayerId.OnValueChanged += SetSelectableState;
     }
 
     public void OnDestroy()
     {
-        GameManager.SetStartSettingsEvent -= SetIsSelectableState;
+        GameManager.Instance.currentPlayerId.OnValueChanged -= SetSelectableState;
     }
 
     public void OnPointerClick(PointerEventData eventData)
     {
         if (!isSelectable) return;
+        isSelectable = false;
 
         OnCardDeckClicked?.Invoke();
         Debug.Log("CardDeck geklickt.");
     }
 
-    private void SetIsSelectableState(ulong currentPlayerId)
+    private void SetSelectableState(ulong previousPlayerId, ulong currentPlayerId)
     {
         ulong localClientId = NetworkManager.Singleton.LocalClientId;
 
