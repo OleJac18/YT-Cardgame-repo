@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -10,6 +9,7 @@ public class GameManager : NetworkBehaviour
 
     private PlayerManager _playerManager;
     private TurnManager _turnManager;
+    private NetworkPlayerUIManager _networkPlayerUIManager;
 
     public NetworkVariable<ulong> currentPlayerId = new NetworkVariable<ulong>();
     public static GameManager Instance { get; private set; }
@@ -68,23 +68,21 @@ public class GameManager : NetworkBehaviour
     private bool CheckAllClientsConnected()
     {
         List<ulong> clientIds = _playerManager.GetConnectedClientIds();
-        if (clientIds.Count < 2)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+
+        return clientIds.Count < 2 ? false : true;
     }
 
     private void InitializeGame()
     {
+        _networkPlayerUIManager = FindObjectOfType<NetworkPlayerUIManager>();
+
         _turnManager.SetStartPlayer(_playerManager);
 
         currentPlayerId.Value = _turnManager.GetCurrentPlayerId();
 
         ServFirstCardsEvent?.Invoke(_playerManager.GetConnectedClientIds(), currentPlayerId.Value);
+
+        _networkPlayerUIManager.InitializePlayerUI(currentPlayerId.Value, _playerManager);
     }
 
     public void PrintPlayerDictionary()

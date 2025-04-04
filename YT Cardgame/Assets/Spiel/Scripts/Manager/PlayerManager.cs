@@ -32,4 +32,9 @@ public class PlayerManager
     {
         return new List<ulong>(_playerDataDict.Keys);
     }
+
+    public Dictionary<ulong, Player> GetPlayerDataDict()
+    {
+        return _playerDataDict;
+    }
 }
