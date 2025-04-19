@@ -1,14 +1,40 @@
 using System;
+using UnityEngine;
 using Unity.Netcode;
 
 public class PlayerUIManager
 {
-    public static event Action<string, int, bool> InitializePlayerUIEvent;
+    public static event Action<PlayerNr, Player, bool> InitializePlayerUIEvent;
 
-    public void InitializePlayerUI(string playerName, int playerScore, ulong currentPlayerId)
+    public void InitializePlayerUI(Player[] players, ulong currentPlayerId)
     {
-        bool isCurrentPlayer = currentPlayerId == NetworkManager.Singleton.LocalClientId;
+        int startIndex = 0;
 
-        InitializePlayerUIEvent?.Invoke(playerName, playerScore, isCurrentPlayer);
+        for (int i = 0; i < players.Length; i++)
+        {
+            if (players[i].id == NetworkManager.Singleton.LocalClientId)
+            {
+                startIndex = i;
+                break;
+            }
+        }
+
+        for (int i = 0; i < players.Length; i++)
+        {
+            if (Enum.IsDefined(typeof(PlayerNr), i))
+            {
+                PlayerNr currentPlayerNr = (PlayerNr)i;
+
+                int playerIndex = (i + startIndex) % players.Length;
+
+                bool isCurrentPlayer = currentPlayerId == players[playerIndex].id;
+
+                InitializePlayerUIEvent?.Invoke(currentPlayerNr, players[playerIndex], isCurrentPlayer);
+            }
+            else
+            {
+                Debug.Log("Ungültiger PlayerNr-Wert " + i);
+            }
+        }
     }
 }

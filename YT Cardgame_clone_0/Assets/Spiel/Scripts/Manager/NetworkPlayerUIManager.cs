@@ -12,19 +12,14 @@ public class NetworkPlayerUIManager : NetworkBehaviour
 
     public void InitializePlayerUI(ulong currentPlayerId, PlayerManager playerManager)
     {
-        Dictionary<ulong, Player> _playerDataDict = playerManager.GetPlayerDataDict();
+        Player[] players = playerManager.GetAllPlayers();
 
-        foreach(KeyValuePair<ulong, Player> playerData in _playerDataDict)
-        {
-            Player player = playerData.Value;
-
-            InitalizePlayerUIManagerClientRpc(player.name, player.score, currentPlayerId, RpcTarget.Single(player.id, RpcTargetUse.Temp));
-        }
+        InitalizePlayerUIManagerClientsAndHostRpc(players, currentPlayerId);
     }
 
-    [Rpc(SendTo.SpecifiedInParams)]
-    public void InitalizePlayerUIManagerClientRpc(string playerName, int playerScore, ulong currentPlayerId, RpcParams rpcParams = default)
+    [Rpc(SendTo.ClientsAndHost)]
+    public void InitalizePlayerUIManagerClientsAndHostRpc(Player[] players, ulong currentPlayerId, RpcParams rpcParams = default)
     {
-        _playerUIManager.InitializePlayerUI(playerName, playerScore, currentPlayerId);
+        _playerUIManager.InitializePlayerUI(players, currentPlayerId);
     }
 }

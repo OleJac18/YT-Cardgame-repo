@@ -2,11 +2,24 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+public enum PlayerNr
+{
+    Player1 = 0,
+    Player2 = 1,
+    Player3 = 2,
+    Player4 = 3
+}
+
+
 public class PlayerUIController : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI playerNameText;
     [SerializeField] private TextMeshProUGUI playerScoreText;
     [SerializeField] private Image activePlayerImage;
+
+    [SerializeField] PlayerNr _playerNr;
+
+    private ulong _localPlayerId;
 
     private void Start()
     {
@@ -18,11 +31,15 @@ public class PlayerUIController : MonoBehaviour
         PlayerUIManager.InitializePlayerUIEvent -= Initialize;
     }
 
-    private void Initialize(string playerName, int playerScore, bool isCurrentPlayer)
+    private void Initialize(PlayerNr playerNr, Player player, bool isCurrentPlayer)
     {
-        playerNameText.text = playerName;
-        UpdateScore(playerScore);
-        SetActivePlayer(isCurrentPlayer);
+        if(_playerNr == playerNr)
+        {
+            _localPlayerId = player.id;
+            playerNameText.text = player.name;
+            UpdateScore(player.score);
+            SetActivePlayer(isCurrentPlayer);
+        }
     }
 
     public void UpdateScore(int score)

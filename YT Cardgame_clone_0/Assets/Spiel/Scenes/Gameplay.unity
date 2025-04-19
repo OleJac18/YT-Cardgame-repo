@@ -1156,6 +1156,7 @@ MonoBehaviour:
   playerNameText: {fileID: 450113629}
   playerScoreText: {fileID: 1589110332}
   activePlayerImage: {fileID: 713534881}
+  _playerNr: 1
 --- !u!1 &777651146
 GameObject:
   m_ObjectHideFlags: 0
@@ -1746,6 +1747,7 @@ MonoBehaviour:
   playerNameText: {fileID: 1915799865}
   playerScoreText: {fileID: 173399060}
   activePlayerImage: {fileID: 1180761886}
+  _playerNr: 0
 --- !u!1 &1293312062
 GameObject:
   m_ObjectHideFlags: 0

@@ -37,4 +37,10 @@ public class PlayerManager
     {
         return _playerDataDict;
     }
+
+    public Player[] GetAllPlayers()
+    {
+        List<Player> players = new List<Player>(_playerDataDict.Values);
+        return players.ToArray();
+    }
 }
