@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,11 +25,13 @@ public class PlayerUIController : MonoBehaviour
     private void Start()
     {
         PlayerUIManager.InitializePlayerUIEvent += Initialize;
+        GameManager.Instance.currentPlayerId.OnValueChanged += OnPlayerTurnChanged;
     }
 
     private void OnDestroy()
     {
         PlayerUIManager.InitializePlayerUIEvent -= Initialize;
+        GameManager.Instance.currentPlayerId.OnValueChanged -= OnPlayerTurnChanged;
     }
 
     private void Initialize(PlayerNr playerNr, Player player, bool isCurrentPlayer)
@@ -50,5 +53,12 @@ public class PlayerUIController : MonoBehaviour
     public void SetActivePlayer(bool isCurrentPlayer)
     {
         activePlayerImage.color = isCurrentPlayer ? Color.green : Color.grey;
+    }
+
+    private void OnPlayerTurnChanged(ulong previousPlayerId, ulong currentPlayerId)
+    {
+        bool isCurrentPlayer = currentPlayerId == _localPlayerId;
+
+        SetActivePlayer(isCurrentPlayer);
     }
 }
