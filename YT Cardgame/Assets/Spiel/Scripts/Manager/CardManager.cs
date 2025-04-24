@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,6 +12,7 @@ public class CardManager : MonoBehaviour
     [SerializeField] private GameObject _showDrawnCardPos;
     [SerializeField] private GameObject _graveyardPos;
     [SerializeField] private GameObject _playerDrawnCardPos;
+    [SerializeField] private GameObject _enemyDrawnCardPos;
 
     public int topCardNumber = -1;
 
@@ -20,6 +20,8 @@ public class CardManager : MonoBehaviour
 
     private GameObject _cardDeckCard;
     private GameObject _graveyardCard;
+
+    public static event Action ShowPlayerButtonEvent;
 
     // Start is called before the first frame update
     void Start()
@@ -45,7 +47,17 @@ public class CardManager : MonoBehaviour
         return _cardStack.DrawTopCard();
     }
 
-    public void SpawnAndMoveCardToDrawnCardPos(int cardNumber, Transform target, bool flipAtDestination)
+    public void SpawnAndMoveCardToPlayerDrawnCardPos(int cardNumber, bool flipAtDestination)
+    {
+        SpawnAndMoveCardToDrawnCardPos(cardNumber, _playerDrawnCardPos.transform, flipAtDestination);
+    }
+
+    public void SpawnAndMoveCardToEnemyDrawnCardPos(int cardNumber, bool flipAtDestination)
+    {
+        SpawnAndMoveCardToDrawnCardPos(cardNumber, _enemyDrawnCardPos.transform, flipAtDestination);
+    }
+
+    private void SpawnAndMoveCardToDrawnCardPos(int cardNumber, Transform target, bool flipAtDestination)
     {
         // Spawned die oberste Karte vom Kartenstapel
         _cardDeckCard = SpawnCard(cardNumber, _spawnCardDeckPos, _spawnCardDeckPos.transform.parent, Card.Stack.CARDDECK, true, false, false);
@@ -56,7 +68,7 @@ public class CardManager : MonoBehaviour
         }
         else
         {
-            MoveToDrawnPosition(_cardDeckCard, target);
+            MoveToDrawnPosition(_cardDeckCard, target, false);
         }
 
 
@@ -141,13 +153,13 @@ public class CardManager : MonoBehaviour
             {
                 LeanTween.delayedCall(0.5f, () =>
                 {
-                    MoveToDrawnPosition(objectToMove, target);
+                    MoveToDrawnPosition(objectToMove, target, true);
                 });
             });
         });
     }
 
-    private void MoveToDrawnPosition(GameObject objectToMove, Transform target)
+    private void MoveToDrawnPosition(GameObject objectToMove, Transform target, bool showButton)
     {
         Vector3 targetPos = GetCenteredPosition(target);
 
@@ -156,6 +168,9 @@ public class CardManager : MonoBehaviour
         LeanTween.move(objectToMove, targetPos, 0.5f).setOnComplete(() =>
         {
             objectToMove.transform.SetParent(target);
+
+            if(showButton)
+                ShowPlayerButtonEvent?.Invoke();
         });
     }
 
@@ -173,12 +188,17 @@ public class CardManager : MonoBehaviour
 
     private void MoveGraveyardCardToPlayerPos()
     {
-        MoveGraveyardCardToDrawnPos(_playerDrawnCardPos.transform);
+        MoveGraveyardCardToDrawnPos(_playerDrawnCardPos.transform, true);
     }
 
-    public void MoveGraveyardCardToDrawnPos(Transform target)
+    public void MoveGraveyardCardToEnemyPos()
     {
-        MoveToDrawnPosition(_graveyardCard, target);
+        MoveGraveyardCardToDrawnPos(_enemyDrawnCardPos.transform, false);
+    }
+
+    public void MoveGraveyardCardToDrawnPos(Transform target, bool showButton)
+    {
+        MoveToDrawnPosition(_graveyardCard, target, showButton);
 
         CardController controller = _graveyardCard.GetComponent<CardController>();
         controller.isSelectable = false;

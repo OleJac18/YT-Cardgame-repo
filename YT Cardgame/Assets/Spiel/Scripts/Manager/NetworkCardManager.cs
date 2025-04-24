@@ -5,9 +5,6 @@ using UnityEngine;
 
 public class NetworkCardManager : NetworkBehaviour
 {
-    public GameObject _playerDrawnCardPos;
-    public GameObject _enemyDrawnCardPos;
-
     private CardManager _cardManager;
 
     // Start is called before the first frame update
@@ -96,7 +93,7 @@ public class NetworkCardManager : NetworkBehaviour
     [Rpc(SendTo.SpecifiedInParams)]
     private void SpawnCardDeckCardSpecificClientRpc(int cardNumber, RpcParams rpcParams = default)
     {
-        _cardManager.SpawnAndMoveCardToDrawnCardPos(cardNumber, _playerDrawnCardPos.transform, true);
+        _cardManager.SpawnAndMoveCardToPlayerDrawnCardPos(cardNumber, true);
 
         SpawnCardDeckCardClientRpc();
     }
@@ -104,7 +101,7 @@ public class NetworkCardManager : NetworkBehaviour
     [Rpc(SendTo.NotMe)]
     private void SpawnCardDeckCardClientRpc()
     {
-        _cardManager.SpawnAndMoveCardToDrawnCardPos(99, _enemyDrawnCardPos.transform, false);
+        _cardManager.SpawnAndMoveCardToEnemyDrawnCardPos(99, false);
     }
 
     [Rpc(SendTo.NotMe)]
@@ -134,6 +131,6 @@ public class NetworkCardManager : NetworkBehaviour
     [Rpc(SendTo.NotMe)]
     private void MoveGraveyardCardToEnemyDrawnPosClientRpc()
     {
-        _cardManager.MoveGraveyardCardToDrawnPos(_enemyDrawnCardPos.transform);
+        _cardManager.MoveGraveyardCardToEnemyPos();
     }
 }
