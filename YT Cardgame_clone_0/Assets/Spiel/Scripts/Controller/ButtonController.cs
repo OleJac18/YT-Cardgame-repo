@@ -1,3 +1,4 @@
+using System;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,6 +7,8 @@ public class ButtonController : MonoBehaviour
 {
     public Button discardButton;
     public Button exchangeButton;
+
+    public static event Action DiscardCardEvent;
 
     // Start is called before the first frame update
     void Start()
@@ -38,11 +41,13 @@ public class ButtonController : MonoBehaviour
     {
         Debug.Log("Ich möchte die Karte wieder abgeben");
         HidePlayerButton();
+
+        DiscardCardEvent?.Invoke();
     }
 
     public void ExchangeButtonClicked()
     {
-        Debug.Log("Ich möchte die Karte wieder abgeben");
+        Debug.Log("Ich möchte eine Karte tauschen");
         HidePlayerButton();
     }
 }

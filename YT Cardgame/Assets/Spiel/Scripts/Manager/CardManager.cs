@@ -23,6 +23,7 @@ public class CardManager : MonoBehaviour
     [SerializeField] private GameObject _drawnCard;
 
     public static event Action ShowPlayerButtonEvent;
+    public static event Action EndTurnEvent;
 
     // Start is called before the first frame update
     void Start()
@@ -36,11 +37,13 @@ public class CardManager : MonoBehaviour
         }
 
         CardController.OnGraveyardCardClickedEvent += MoveGraveyardCardToPlayerPos;
+        ButtonController.DiscardCardEvent += MoveDrawnCardToGraveyardPos;
     }
 
     private void OnDestroy()
     {
         CardController.OnGraveyardCardClickedEvent -= MoveGraveyardCardToPlayerPos;
+        ButtonController.DiscardCardEvent -= MoveDrawnCardToGraveyardPos;
     }
 
     public int DrawTopCard()
@@ -221,5 +224,31 @@ public class CardManager : MonoBehaviour
 
         CardController controller = _graveyardCard.GetComponent<CardController>();
         controller.isSelectable = false;
+    }
+
+    public void MoveDrawnCardToGraveyardPos()
+    {
+        Vector3 targetPos = GetCenteredPosition(_graveyardPos.transform);
+
+        LeanTween.move(_drawnCard, targetPos, 0.5f).setOnComplete(() =>
+        {
+            _drawnCard.transform.SetParent(_graveyardPos.transform);
+
+            CardController drawnCardController = _drawnCard.GetComponent<CardController>();
+
+            if (drawnCardController.GetCardBackImageVisibility())
+            {
+                drawnCardController.FlipCardAnimation(false);
+            }
+
+            _graveyardCard = _drawnCard;
+
+            CardController graveyardController = _graveyardCard.GetComponent<CardController>();
+            graveyardController.SetCorrespondingDeck(Card.DeckType.GRAVEYARD);
+
+            _drawnCard = null;
+
+            EndTurnEvent?.Invoke();
+        });
     }
 }

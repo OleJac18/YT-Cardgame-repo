@@ -76,6 +76,11 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         cardBackImage.SetActive(visible);
     }
 
+    public bool GetCardBackImageVisibility()
+    {
+        return cardBackImage.activeSelf;
+    }
+
     public void OnPointerEnter(PointerEventData eventData)
     {
         // Wenn nicht gehovert werden darf, return

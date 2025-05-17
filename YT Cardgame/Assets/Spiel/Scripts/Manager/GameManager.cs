@@ -27,12 +27,14 @@ public class GameManager : NetworkBehaviour
     void Start()
     {
         ConnectionManager.ClientConnectedEvent += OnClientConnected;
+        CardManager.EndTurnEvent += EndTurn;
     }
 
     public override void OnDestroy()
     {
         base.OnDestroy();
         ConnectionManager.ClientConnectedEvent -= OnClientConnected;
+        CardManager.EndTurnEvent -= EndTurn;
     }
 
     public override void OnNetworkSpawn()
@@ -88,5 +90,14 @@ public class GameManager : NetworkBehaviour
     public void PrintPlayerDictionary()
     {
         _playerManager.PrintPlayerDictionary();
+    }
+
+    private void EndTurn()
+    {
+        if(IsServer && _turnManager != null)
+        {
+            _turnManager.NextTurn();
+            currentPlayerId.Value = _turnManager.GetCurrentPlayerId();
+        }
     }
 }
