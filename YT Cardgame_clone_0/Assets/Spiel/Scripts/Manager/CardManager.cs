@@ -18,8 +18,9 @@ public class CardManager : MonoBehaviour
 
     [SerializeField] private CardStack _cardStack;
 
-    private GameObject _cardDeckCard;
-    private GameObject _graveyardCard;
+    [SerializeField] private GameObject _cardDeckCard;
+    [SerializeField] private GameObject _graveyardCard;
+    [SerializeField] private GameObject _drawnCard;
 
     public static event Action ShowPlayerButtonEvent;
 
@@ -60,7 +61,7 @@ public class CardManager : MonoBehaviour
     private void SpawnAndMoveCardToDrawnCardPos(int cardNumber, Transform target, bool flipAtDestination)
     {
         // Spawned die oberste Karte vom Kartenstapel
-        _cardDeckCard = SpawnCard(cardNumber, _spawnCardDeckPos, _spawnCardDeckPos.transform.parent, Card.Stack.CARDDECK, true, false, false);
+        _cardDeckCard = SpawnCard(cardNumber, _spawnCardDeckPos, _spawnCardDeckPos.transform.parent, Card.DeckType.CARDDECK, true, false, false);
 
         if (flipAtDestination)
         {
@@ -79,10 +80,10 @@ public class CardManager : MonoBehaviour
         for (int i = 0; i < 4; i++)
         {
             // Spawned die Spielerkarten
-            SpawnCard(playerCards[i], _spawnCardPlayerPos, _spawnCardPlayerPos.transform, Card.Stack.PLAYERCARD, false, true, true);
+            SpawnCard(playerCards[i], _spawnCardPlayerPos, _spawnCardPlayerPos.transform, Card.DeckType.PLAYERCARD, false, true, true);
 
             // Spawned die Gegnerkarten
-            SpawnCard(99, _spawnCardEnemyPos, _spawnCardEnemyPos.transform, Card.Stack.ENEMYCARD, true, false, false);
+            SpawnCard(99, _spawnCardEnemyPos, _spawnCardEnemyPos.transform, Card.DeckType.ENEMYCARD, true, false, false);
         }
     }
 
@@ -109,7 +110,7 @@ public class CardManager : MonoBehaviour
 
     public void SpawnAndMoveGraveyardCard(int cardNumber, bool isSelectable)
     {
-        _graveyardCard = SpawnCard(cardNumber, _spawnCardDeckPos, _graveyardPos.transform.parent, Card.Stack.GRAVEYARD, true, false, isSelectable);
+        _graveyardCard = SpawnCard(cardNumber, _spawnCardDeckPos, _graveyardPos.transform.parent, Card.DeckType.GRAVEYARD, true, false, isSelectable);
 
         CardController controller = _graveyardCard.GetComponent<CardController>();
 
@@ -122,7 +123,7 @@ public class CardManager : MonoBehaviour
         });
     }
 
-    private GameObject SpawnCard(int cardNumber, GameObject targetPos, Transform parent, Card.Stack corresDeck, bool backCardIsVisible, bool canHover, bool isSelectable)
+    private GameObject SpawnCard(int cardNumber, GameObject targetPos, Transform parent, Card.DeckType corresDeck, bool backCardIsVisible, bool canHover, bool isSelectable)
     {
         GameObject spawnCard = Instantiate(_cardPrefab, targetPos.transform.position, targetPos.transform.rotation);
 
@@ -169,10 +170,28 @@ public class CardManager : MonoBehaviour
         {
             objectToMove.transform.SetParent(target);
 
-            if(showButton)
-                ShowPlayerButtonEvent?.Invoke();
+            SetCardToDrawnCard(objectToMove, showButton);
         });
     }
+
+    private void SetCardToDrawnCard(GameObject objectToMove, bool showButton)
+    {
+        _drawnCard = objectToMove;
+
+        CardController controller = objectToMove.GetComponent<CardController>();
+        Card.DeckType corresDeck = controller.GetCorrespondingDeck();
+
+        if (corresDeck == Card.DeckType.GRAVEYARD)
+            _graveyardCard = null;
+        else
+            _cardDeckCard = null;
+
+        controller.SetCorrespondingDeck(Card.DeckType.DRAWNCARD);
+
+        if (showButton)
+            ShowPlayerButtonEvent?.Invoke();
+    }
+
 
     private Vector3 GetCenteredPosition(Transform target)
     {

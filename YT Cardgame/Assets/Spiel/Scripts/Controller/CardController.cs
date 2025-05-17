@@ -28,7 +28,7 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         _outline = this.GetComponent<Outline>();
         _originalScale = Vector3.one;
         _hoverScale = new Vector3(1.1f, 1.1f, 1f);
-        _card = new Card(13, Card.Stack.NONE);
+        _card = new Card(13, Card.DeckType.NONE);
     }
 
     private void Start()
@@ -61,9 +61,14 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         numberTextBottomRight.text = cardNumber;
     }
 
-    public void SetCorrespondingDeck(Card.Stack decktype)
+    public void SetCorrespondingDeck(Card.DeckType decktype)
     {
         _card.correspondingDeck = decktype;
+    }
+
+    public Card.DeckType GetCorrespondingDeck()
+    {
+        return _card.correspondingDeck;
     }
 
     public void SetCardBackImageVisibility(bool visible)
@@ -98,7 +103,7 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         // Wenn nicht gehovert werden darf, return
         if (!isSelectable) return;
 
-        if (_card.correspondingDeck == Card.Stack.GRAVEYARD)
+        if (_card.correspondingDeck == Card.DeckType.GRAVEYARD)
         {
             OnGraveyardCardClickedEvent?.Invoke();
         }
@@ -137,11 +142,11 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         ulong localClientId = NetworkManager.Singleton.LocalClientId;
         bool interactable = currentPlayerId == localClientId;
 
-        SetInteractableStateForSpecificDeckType(Card.Stack.PLAYERCARD, interactable);
-        SetInteractableStateForSpecificDeckType(Card.Stack.GRAVEYARD, interactable);
+        SetInteractableStateForSpecificDeckType(Card.DeckType.PLAYERCARD, interactable);
+        SetInteractableStateForSpecificDeckType(Card.DeckType.GRAVEYARD, interactable);
     }
 
-    private void SetInteractableStateForSpecificDeckType(Card.Stack cardDeckType, bool interactable)
+    private void SetInteractableStateForSpecificDeckType(Card.DeckType cardDeckType, bool interactable)
     {
         if (_card.correspondingDeck != cardDeckType) return;
         SetInteractableState(interactable);

@@ -13,7 +13,7 @@ public class CardStack
             // Für die 0
             if (i < 2)
             {
-                stack.Add(new Card(0, Card.Stack.CARDDECK));
+                stack.Add(new Card(0, Card.DeckType.CARDDECK));
             }
 
             // Für 1 bis 12
@@ -21,13 +21,13 @@ public class CardStack
             {
                 int number = ((i - 2) / 4) + 1;
 
-                stack.Add(new Card(number, Card.Stack.CARDDECK));
+                stack.Add(new Card(number, Card.DeckType.CARDDECK));
             }
 
             // Für die 13
             if (i >= 50)
             {
-                stack.Add(new Card(13, Card.Stack.CARDDECK));
+                stack.Add(new Card(13, Card.DeckType.CARDDECK));
             }
         }
     }
