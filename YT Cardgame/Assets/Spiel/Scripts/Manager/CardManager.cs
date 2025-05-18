@@ -37,18 +37,24 @@ public class CardManager : MonoBehaviour
         }
 
         CardController.OnGraveyardCardClickedEvent += MoveGraveyardCardToPlayerPos;
-        ButtonController.DiscardCardEvent += MoveDrawnCardToGraveyardPos;
+        ButtonController.DiscardCardEvent += MovePlayerDrawnCardToGraveyardPos;
     }
 
     private void OnDestroy()
     {
         CardController.OnGraveyardCardClickedEvent -= MoveGraveyardCardToPlayerPos;
-        ButtonController.DiscardCardEvent -= MoveDrawnCardToGraveyardPos;
+        ButtonController.DiscardCardEvent -= MovePlayerDrawnCardToGraveyardPos;
     }
 
     public int DrawTopCard()
     {
         return _cardStack.DrawTopCard();
+    }
+
+    public int GetDrawnCardNumber()
+    {
+        CardController controller = _drawnCard.GetComponent<CardController>();
+        return controller.CardNumber;
     }
 
     public void SpawnAndMoveCardToPlayerDrawnCardPos(int cardNumber, bool flipAtDestination)
@@ -226,7 +232,18 @@ public class CardManager : MonoBehaviour
         controller.isSelectable = false;
     }
 
-    public void MoveDrawnCardToGraveyardPos()
+    public void MovePlayerDrawnCardToGraveyardPos()
+    {
+        CardController controller = _drawnCard.GetComponent<CardController>();
+        MoveDrawnCardToGraveyardPos(controller.CardNumber);
+    }
+
+    public void MoveEnemyDrawnCardToGraveyardPos(int cardNumber)
+    {
+        MoveDrawnCardToGraveyardPos(cardNumber);
+    }
+
+    public void MoveDrawnCardToGraveyardPos(int cardNumber)
     {
         Vector3 targetPos = GetCenteredPosition(_graveyardPos.transform);
 
@@ -235,6 +252,7 @@ public class CardManager : MonoBehaviour
             _drawnCard.transform.SetParent(_graveyardPos.transform);
 
             CardController drawnCardController = _drawnCard.GetComponent<CardController>();
+            drawnCardController.CardNumber = cardNumber;
 
             if (drawnCardController.GetCardBackImageVisibility())
             {
