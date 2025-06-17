@@ -3161,6 +3161,10 @@ MonoBehaviour:
   topCardNumber: -1
   _cardStack:
     stack: []
+  _cardDeckCard: {fileID: 0}
+  _graveyardCard: {fileID: 0}
+  _drawnCard: {fileID: 0}
+  _playerClickedCards: 
 --- !u!4 &1935967951
 Transform:
   m_ObjectHideFlags: 0

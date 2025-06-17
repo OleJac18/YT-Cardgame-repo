@@ -22,12 +22,17 @@ public class CardManager : MonoBehaviour
     [SerializeField] private GameObject _graveyardCard;
     [SerializeField] private GameObject _drawnCard;
 
+    [SerializeField] private bool[] _playerClickedCards;
+    [SerializeField] private bool[] _enemyClickedCards;
+
     public static event Action ShowPlayerButtonEvent;
     public static event Action EndTurnEvent;
 
     // Start is called before the first frame update
     void Start()
     {
+        _playerClickedCards = new bool[4];
+        _enemyClickedCards = new bool[4];
 
         if (NetworkManager.Singleton.IsServer)
         {
@@ -38,12 +43,16 @@ public class CardManager : MonoBehaviour
 
         CardController.OnGraveyardCardClickedEvent += MoveGraveyardCardToPlayerPos;
         ButtonController.DiscardCardEvent += MovePlayerDrawnCardToGraveyardPos;
+        ButtonController.ExchangeCardEvent += ExchangeCards;
+        CardController.OnCardClickedEvent += SetPlayerClickedCardIndex;
     }
 
     private void OnDestroy()
     {
         CardController.OnGraveyardCardClickedEvent -= MoveGraveyardCardToPlayerPos;
         ButtonController.DiscardCardEvent -= MovePlayerDrawnCardToGraveyardPos;
+        ButtonController.ExchangeCardEvent -= ExchangeCards;
+        CardController.OnCardClickedEvent -= SetPlayerClickedCardIndex;
     }
 
     public int DrawTopCard()
@@ -102,7 +111,7 @@ public class CardManager : MonoBehaviour
         card.transform.localScale = scaleBy;
     }
 
-    public void SetEnemyCardClicked(bool isSelected, int index)
+    public void SetEnemyCardOutline(bool isSelected, int index)
     {
         GameObject card = _spawnCardEnemyPos.transform.GetChild(index).gameObject;
         Outline outline = card.GetComponent<Outline>();
@@ -267,6 +276,91 @@ public class CardManager : MonoBehaviour
             _drawnCard = null;
 
             EndTurnEvent?.Invoke();
+        });
+    }
+
+    private void SetPlayerClickedCardIndex(bool isSelected, int index)
+    {
+        _playerClickedCards[index] = isSelected;
+    }
+
+    public void SetEnemyClickedCardIndex(bool isSelected, int index)
+    {
+        _enemyClickedCards[index] = isSelected;
+    }
+
+    private int FindFirstTrueIndex(bool[] _clickedCards)
+    {
+        for (int i = 0; i < _clickedCards.Length; i++)
+        {
+            if (_clickedCards[i])
+            {
+                return i; // Gibt den Index des ersten Elements zurück, das true ist
+            }
+        }
+        return -1; // Gibt -1 zurück, wenn kein true gefunden wurde
+    }
+
+    private void ResetClickedCards(bool[] clickedCards)
+    {
+        Array.Fill(clickedCards, false);
+    }
+
+    public void ExchangeEnemyCards()
+    {
+        ExchangeCards(_spawnCardEnemyPos, _enemyClickedCards);
+    }
+
+    private void ExchangeCards(GameObject playerPanel, bool[] clickedCards)
+    {
+        MovePlayerCardsToGraveyardPos(playerPanel, clickedCards);
+        MoveDrawnCardToTarget();
+    }
+
+    private void MovePlayerCardsToGraveyardPos(GameObject playerPanel, bool[] clickedCards)
+    {
+        Vector3 targetPos = GetCenteredPosition(_graveyardPos.transform);
+
+        for (int i = 0; i < clickedCards.Length; i++)
+        {
+            if (!_playerClickedCards[i]) { continue; }
+
+            GameObject _selectedCard = playerPanel.transform.GetChild(i).gameObject;
+            CardController controller = _selectedCard.GetComponent<CardController>();
+            controller.SetOutline(false);
+
+            LeanTween.move(_selectedCard, targetPos, 0.5f).setOnComplete(() =>
+            {
+                _selectedCard.transform.SetParent(_graveyardPos.transform);
+                controller.SetCorrespondingDeck(Card.DeckType.GRAVEYARD);
+            });
+        }
+    }
+
+    private void MoveDrawnCardToTarget()
+    {
+        int index = FindFirstTrueIndex(_playerClickedCards);
+        GameObject _firstSelectedCard = _spawnCardPlayerPos.transform.GetChild(index).gameObject;
+
+        Vector3[] points = MoveInCircle.CalculateCircle(8, _drawnCard.transform,
+                _firstSelectedCard.transform, 1, 100);
+
+        LeanTween.moveSpline(_drawnCard, points, 0.5f).setOnComplete(() =>
+        {
+            _drawnCard.transform.SetParent(_spawnCardPlayerPos.transform);
+            _drawnCard.transform.SetSiblingIndex(index);
+
+            CardController controller = _drawnCard.GetComponent<CardController>();
+            controller.SetCorrespondingDeck(Card.DeckType.PLAYERCARD);
+
+            _drawnCard = null;
+
+            ResetClickedCards(_playerClickedCards);
+
+            LeanTween.delayedCall(0.6f, () =>
+            {
+                EndTurnEvent?.Invoke();
+            });
         });
     }
 }
