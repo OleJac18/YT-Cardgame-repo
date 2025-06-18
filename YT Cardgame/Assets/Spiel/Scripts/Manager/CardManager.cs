@@ -43,7 +43,7 @@ public class CardManager : MonoBehaviour
 
         CardController.OnGraveyardCardClickedEvent += MoveGraveyardCardToPlayerPos;
         ButtonController.DiscardCardEvent += MovePlayerDrawnCardToGraveyardPos;
-        ButtonController.ExchangeCardEvent += ExchangeCards;
+        ButtonController.ExchangeCardEvent += ExchangePlayerCards;
         CardController.OnCardClickedEvent += SetPlayerClickedCardIndex;
     }
 
@@ -51,7 +51,7 @@ public class CardManager : MonoBehaviour
     {
         CardController.OnGraveyardCardClickedEvent -= MoveGraveyardCardToPlayerPos;
         ButtonController.DiscardCardEvent -= MovePlayerDrawnCardToGraveyardPos;
-        ButtonController.ExchangeCardEvent -= ExchangeCards;
+        ButtonController.ExchangeCardEvent -= ExchangePlayerCards;
         CardController.OnCardClickedEvent -= SetPlayerClickedCardIndex;
     }
 
@@ -311,10 +311,15 @@ public class CardManager : MonoBehaviour
         ExchangeCards(_spawnCardEnemyPos, _enemyClickedCards);
     }
 
+    public void ExchangePlayerCards()
+    {
+        ExchangeCards(_spawnCardPlayerPos, _playerClickedCards);
+    }
+
     private void ExchangeCards(GameObject playerPanel, bool[] clickedCards)
     {
         MovePlayerCardsToGraveyardPos(playerPanel, clickedCards);
-        MoveDrawnCardToTarget();
+        MoveDrawnCardToTarget(playerPanel, clickedCards);
     }
 
     private void MovePlayerCardsToGraveyardPos(GameObject playerPanel, bool[] clickedCards)
@@ -323,7 +328,7 @@ public class CardManager : MonoBehaviour
 
         for (int i = 0; i < clickedCards.Length; i++)
         {
-            if (!_playerClickedCards[i]) { continue; }
+            if (!clickedCards[i]) { continue; }
 
             GameObject _selectedCard = playerPanel.transform.GetChild(i).gameObject;
             CardController controller = _selectedCard.GetComponent<CardController>();
@@ -331,31 +336,42 @@ public class CardManager : MonoBehaviour
 
             LeanTween.move(_selectedCard, targetPos, 0.5f).setOnComplete(() =>
             {
+                _graveyardCard = _selectedCard;
+
                 _selectedCard.transform.SetParent(_graveyardPos.transform);
                 controller.SetCorrespondingDeck(Card.DeckType.GRAVEYARD);
             });
         }
     }
 
-    private void MoveDrawnCardToTarget()
+    private void MoveDrawnCardToTarget(GameObject playerPanel, bool[] clickedCards)
     {
-        int index = FindFirstTrueIndex(_playerClickedCards);
-        GameObject _firstSelectedCard = _spawnCardPlayerPos.transform.GetChild(index).gameObject;
+        int index = FindFirstTrueIndex(clickedCards);
+        GameObject _firstSelectedCard = playerPanel.transform.GetChild(index).gameObject;
+
+        // Herausfinden, ob man der aktuelle Spieler ist, damit man sagen kann, wie der Bogen bei der Bewegung sein soll
+        int rotation;
+        bool isCurrentPlayer = GameManager.Instance.currentPlayerId.Value == NetworkManager.Singleton.LocalClientId;
+
+        rotation = isCurrentPlayer ? 1 : -1;
 
         Vector3[] points = MoveInCircle.CalculateCircle(8, _drawnCard.transform,
-                _firstSelectedCard.transform, 1, 100);
+            _firstSelectedCard.transform, rotation, 100);
 
         LeanTween.moveSpline(_drawnCard, points, 0.5f).setOnComplete(() =>
         {
-            _drawnCard.transform.SetParent(_spawnCardPlayerPos.transform);
+            _drawnCard.transform.SetParent(playerPanel.transform);
             _drawnCard.transform.SetSiblingIndex(index);
 
             CardController controller = _drawnCard.GetComponent<CardController>();
-            controller.SetCorrespondingDeck(Card.DeckType.PLAYERCARD);
+            Card.DeckType corresDeck = isCurrentPlayer ? Card.DeckType.PLAYERCARD : Card.DeckType.ENEMYCARD;
+
+            controller.SetCorrespondingDeck(corresDeck);
 
             _drawnCard = null;
 
             ResetClickedCards(_playerClickedCards);
+            ResetClickedCards(_enemyClickedCards);
 
             LeanTween.delayedCall(0.6f, () =>
             {
