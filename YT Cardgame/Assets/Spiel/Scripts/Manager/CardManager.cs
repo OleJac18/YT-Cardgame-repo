@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
@@ -43,7 +44,6 @@ public class CardManager : MonoBehaviour
 
         CardController.OnGraveyardCardClickedEvent += MoveGraveyardCardToPlayerPos;
         ButtonController.DiscardCardEvent += MovePlayerDrawnCardToGraveyardPos;
-        ButtonController.ExchangeCardEvent += ExchangePlayerCards;
         CardController.OnCardClickedEvent += SetPlayerClickedCardIndex;
     }
 
@@ -51,7 +51,6 @@ public class CardManager : MonoBehaviour
     {
         CardController.OnGraveyardCardClickedEvent -= MoveGraveyardCardToPlayerPos;
         ButtonController.DiscardCardEvent -= MovePlayerDrawnCardToGraveyardPos;
-        ButtonController.ExchangeCardEvent -= ExchangePlayerCards;
         CardController.OnCardClickedEvent -= SetPlayerClickedCardIndex;
     }
 
@@ -301,29 +300,93 @@ public class CardManager : MonoBehaviour
         return -1; // Gibt -1 zurück, wenn kein true gefunden wurde
     }
 
+    public bool IsAnyCardSelected()
+    {
+        foreach (bool value in _playerClickedCards)
+        {
+            if (value)
+            {
+                return true; // Sofort beenden, wenn ein true gefunden wurde
+            }
+        }
+        return false; // Kein true gefunden
+    }
+
+    public int[] UpdatePlayerCards(int[] cards)
+    {
+        List<int> newCardsList = new List<int>();
+        bool addedClickedCard = false; // Verfolgt, ob bereits eine geklickte Karte hinzugefügt wurde
+
+        for (int i = 0; i < cards.Length; i++)
+        {
+            if (!_playerClickedCards[i])
+            {
+                // Füge alle nicht geklickten Karten hinzu
+                newCardsList.Add(cards[i]);
+            }
+            else if (!addedClickedCard)
+            {
+                // Füge die gezogene Karte hinzu, wenn noch keine hinzugefügt wurde
+                CardController controller = _drawnCard.GetComponent<CardController>();
+                newCardsList.Add(controller.CardNumber);
+                addedClickedCard = true;
+            }
+        }
+
+        return newCardsList.ToArray();
+    }
+
+    public bool AreSelectedCardsEqual(int[] cards)
+    {
+        int? referenceValue = null;
+
+        for (int i = 0; i < cards.Length; i++)
+        {
+            if (_playerClickedCards[i])
+            {
+                if (referenceValue == null)
+                {
+                    referenceValue = cards[i];
+                }
+                else if (cards[i] != referenceValue)
+                {
+                    Debug.Log("Die angeklickten Karten sind nicht gleich. Gezogene Karte wird abgelegt.");
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     private void ResetClickedCards(bool[] clickedCards)
     {
         Array.Fill(clickedCards, false);
     }
 
-    public void ExchangeEnemyCards()
+    public void ExchangeEnemyCards(int[] cards)
     {
-        ExchangeCards(_spawnCardEnemyPos, _enemyClickedCards);
+        ExchangeCards(_spawnCardEnemyPos, _enemyClickedCards, cards);
     }
 
-    public void ExchangePlayerCards()
+    public void ExchangePlayerCards(int[] cards)
     {
-        ExchangeCards(_spawnCardPlayerPos, _playerClickedCards);
+        if (!IsAnyCardSelected()) return; 
+        ExchangeCards(_spawnCardPlayerPos, _playerClickedCards, cards);
     }
 
-    private void ExchangeCards(GameObject playerPanel, bool[] clickedCards)
+    private void ExchangeCards(GameObject playerPanel, bool[] clickedCards, int[] cards)
     {
-        MovePlayerCardsToGraveyardPos(playerPanel, clickedCards);
+        MovePlayerCardsToGraveyardPos(playerPanel, clickedCards, cards);
         MoveDrawnCardToTarget(playerPanel, clickedCards);
     }
 
-    private void MovePlayerCardsToGraveyardPos(GameObject playerPanel, bool[] clickedCards)
+    private void MovePlayerCardsToGraveyardPos(GameObject playerPanel, bool[] clickedCards, int[] cards)
     {
+        // Erste Karte finden, die geklickt wurde
+        int index = FindFirstTrueIndex(clickedCards);
+        int cardNumber = cards[index];
+
         Vector3 targetPos = GetCenteredPosition(_graveyardPos.transform);
 
         for (int i = 0; i < clickedCards.Length; i++)
@@ -333,6 +396,7 @@ public class CardManager : MonoBehaviour
             GameObject _selectedCard = playerPanel.transform.GetChild(i).gameObject;
             CardController controller = _selectedCard.GetComponent<CardController>();
             controller.SetOutline(false);
+            controller.CardNumber = cardNumber;
 
             LeanTween.move(_selectedCard, targetPos, 0.5f).setOnComplete(() =>
             {
@@ -340,6 +404,8 @@ public class CardManager : MonoBehaviour
 
                 _selectedCard.transform.SetParent(_graveyardPos.transform);
                 controller.SetCorrespondingDeck(Card.DeckType.GRAVEYARD);
+
+                controller.FlipCardAnimation(false);
             });
         }
     }

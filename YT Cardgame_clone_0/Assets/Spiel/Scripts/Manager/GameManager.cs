@@ -14,6 +14,9 @@ public class GameManager : NetworkBehaviour
     public NetworkVariable<ulong> currentPlayerId = new NetworkVariable<ulong>();
     public static GameManager Instance { get; private set; }
 
+    public static event Action<int[]> ProcessSelectedCardsEvent;
+
+
     private void Awake()
     {
         DontDestroyOnLoad(this);
@@ -99,5 +102,23 @@ public class GameManager : NetworkBehaviour
             _turnManager.NextTurn();
             currentPlayerId.Value = _turnManager.GetCurrentPlayerId();
         }
+    }
+
+    public void SetPlayerCards(ulong clientId, List<int> cards)
+    {
+        _playerManager.SetPlayerCards(clientId, cards);
+    }
+
+    public void GetPlayerCardsAndProcessSelectedCards(ulong clientId)
+    {
+        List<int> cards = _playerManager.GetPlayerCards(clientId);
+        ProcessSelectedCardsClientRpc(cards.ToArray(), RpcTarget.Single(clientId, RpcTargetUse.Temp));
+    }
+
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    public void ProcessSelectedCardsClientRpc(int[] cards, RpcParams rpcParams = default)
+    {
+        ProcessSelectedCardsEvent?.Invoke(cards);
     }
 }

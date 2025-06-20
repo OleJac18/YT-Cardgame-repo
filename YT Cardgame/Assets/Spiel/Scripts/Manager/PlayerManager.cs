@@ -43,4 +43,19 @@ public class PlayerManager
         List<Player> players = new List<Player>(_playerDataDict.Values);
         return players.ToArray();
     }
+
+    public List<int> GetPlayerCards(ulong clientId)
+    {
+        return _playerDataDict[clientId].cards;
+    }
+
+    public void SetPlayerCards(ulong clientId, List<int> cards)
+    {
+        // Statt die Referenz der übergebenen Liste direkt zu verwenden, wird new List<int>(cards) erstellt.
+        // Das verhindert unbeabsichtigte Änderungen an der übergebenen Liste, weil List ein Referenztyp ist
+        _playerDataDict[clientId].cards = new List<int>(cards);
+
+        Debug.Log("ID: " + clientId);
+        Debug.Log("Neue Kartenliste im PlayerManager: " + string.Join(", ", _playerDataDict[clientId].cards));
+    }
 }

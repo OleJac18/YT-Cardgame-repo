@@ -1,10 +1,13 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
 public class NetworkCardManager : NetworkBehaviour
 {
+    public static event Action HidePlayerButtonEvent;
+
     private CardManager _cardManager;
 
     // Start is called before the first frame update
@@ -18,7 +21,8 @@ public class NetworkCardManager : NetworkBehaviour
         CardController.OnCardClickedEvent += SetEnemyCardClickedClientRpc;
         CardController.OnGraveyardCardClickedEvent += MoveGraveyardCardToEnemyDrawnPosClientRpc;
         ButtonController.DiscardCardEvent += MoveEnemyCardToGraveyardPos;
-        ButtonController.ExchangeCardEvent += ExchangeCardsClientRpc;
+        ButtonController.ExchangeCardEvent += ExchangeButtonClicked;
+        GameManager.ProcessSelectedCardsEvent += ProcessSelectedCards;
     }
 
     public override void OnDestroy()
@@ -30,7 +34,8 @@ public class NetworkCardManager : NetworkBehaviour
         CardController.OnCardClickedEvent -= SetEnemyCardClickedClientRpc;
         CardController.OnGraveyardCardClickedEvent -= MoveGraveyardCardToEnemyDrawnPosClientRpc;
         ButtonController.DiscardCardEvent -= MoveEnemyCardToGraveyardPos;
-        ButtonController.ExchangeCardEvent -= ExchangeCardsClientRpc;
+        ButtonController.ExchangeCardEvent -= ExchangeButtonClicked;
+        GameManager.ProcessSelectedCardsEvent -= ProcessSelectedCards;
     }
 
     private void HandleCardDeckClicked()
@@ -67,9 +72,42 @@ public class NetworkCardManager : NetworkBehaviour
                 }
             }
 
+            UpdatePlayerCardsServerRpc(clientId, playerCards);
             SpawnCardsClientRpc(playerCards, RpcTarget.Single(clientId, RpcTargetUse.Temp));
         }
     }
+
+    public void ExchangeButtonClicked()
+    {
+        if (_cardManager.IsAnyCardSelected())
+        {
+            HidePlayerButtonEvent?.Invoke();
+            HandleCardExchangeClickedServerRpc(NetworkManager.Singleton.LocalClientId);
+        }
+        else
+        {
+            Debug.Log("Es wurde keine Karte zum Tauschen angeklickt!");
+        }
+    }
+
+    private void ProcessSelectedCards(int[] cards)
+    {
+        if (_cardManager.AreSelectedCardsEqual(cards))
+        {
+            int[] newPlayerCards = _cardManager.UpdatePlayerCards(cards);
+            UpdatePlayerCardsServerRpc(NetworkManager.Singleton.LocalClientId, newPlayerCards);
+
+            _cardManager.ExchangePlayerCards(cards);
+            ExchangeEnemyCardsClientRpc(cards);
+        } 
+        else
+        {
+            // Legt die gezogene Karte auf den Ablagestapel ab
+            _cardManager.MovePlayerDrawnCardToGraveyardPos();
+            MoveEnemyCardToGraveyardPos();
+        }
+    }
+
 
     [Rpc(SendTo.SpecifiedInParams)]
     private void SpawnCardsClientRpc(int[] playerCards, RpcParams rpcParams = default)
@@ -153,8 +191,20 @@ public class NetworkCardManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.NotMe)]
-    private void ExchangeCardsClientRpc()
+    private void ExchangeEnemyCardsClientRpc(int[] cards)
     {
-        _cardManager.ExchangeEnemyCards();
+        _cardManager.ExchangeEnemyCards(cards);
+    }
+
+    [Rpc(SendTo.Server)]
+    private void UpdatePlayerCardsServerRpc(ulong clientId, int[] cards)
+    {
+        GameManager.Instance.SetPlayerCards(clientId, cards.ToList<int>());
+    }
+
+    [Rpc(SendTo.Server)]
+    private void HandleCardExchangeClickedServerRpc(ulong clientId)
+    {
+        GameManager.Instance.GetPlayerCardsAndProcessSelectedCards(clientId);
     }
 }
