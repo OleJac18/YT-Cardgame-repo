@@ -162,4 +162,9 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         isSelectable = interactable;
         canHover = interactable;
     }
+
+    public void SetOutline(bool visible)
+    {
+        _outline.enabled = visible;
+    }
 }

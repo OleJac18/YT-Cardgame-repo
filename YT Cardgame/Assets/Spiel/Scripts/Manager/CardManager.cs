@@ -21,6 +21,7 @@ public class CardManager : MonoBehaviour
     [SerializeField] private GameObject _cardDeckCard;
     [SerializeField] private GameObject _graveyardCard;
     [SerializeField] private GameObject _drawnCard;
+    [SerializeField] private bool[] _playerClickedCards;
 
     public static event Action ShowPlayerButtonEvent;
     public static event Action EndTurnEvent;
@@ -28,6 +29,8 @@ public class CardManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        _playerClickedCards = new bool[4];
+
 
         if (NetworkManager.Singleton.IsServer)
         {
@@ -38,12 +41,16 @@ public class CardManager : MonoBehaviour
 
         CardController.OnGraveyardCardClickedEvent += MoveGraveyardCardToPlayerPos;
         ButtonController.DiscardCardEvent += MovePlayerDrawnCardToGraveyardPos;
+        ButtonController.ExchangeCardEvent += ExchangeCards;
+        CardController.OnCardClickedEvent += SetPlayerClickedCardIndex;
     }
 
     private void OnDestroy()
     {
         CardController.OnGraveyardCardClickedEvent -= MoveGraveyardCardToPlayerPos;
         ButtonController.DiscardCardEvent -= MovePlayerDrawnCardToGraveyardPos;
+        ButtonController.ExchangeCardEvent -= ExchangeCards;
+        CardController.OnCardClickedEvent -= SetPlayerClickedCardIndex;
     }
 
     public int DrawTopCard()
@@ -268,5 +275,37 @@ public class CardManager : MonoBehaviour
 
             EndTurnEvent?.Invoke();
         });
+    }
+
+    private void SetPlayerClickedCardIndex(bool isSelected, int index)
+    {
+        _playerClickedCards[index] = isSelected;
+    }
+
+    private void ExchangeCards()
+    {
+        MovePlayerCardsToGraveyardPos();
+    }
+
+    private void MovePlayerCardsToGraveyardPos()
+    {
+        Vector3 targetPos = GetCenteredPosition(_graveyardPos.transform);
+
+        for (int i = 0; i < _playerClickedCards.Length; i++)
+        {
+            if (!_playerClickedCards[i]) continue;
+
+            GameObject _selectedCard = _spawnCardPlayerPos.transform.GetChild(i).gameObject;
+            CardController controller = _selectedCard.GetComponent<CardController>();
+            controller.SetOutline(false);
+
+            LeanTween.move(_selectedCard, targetPos, 0.5f).setOnComplete(() =>
+            {
+                _graveyardCard = _selectedCard;
+
+                _selectedCard.transform.SetParent(_graveyardPos.transform);
+                controller.SetCorrespondingDeck(Card.DeckType.GRAVEYARD);
+            });
+        }
     }
 }

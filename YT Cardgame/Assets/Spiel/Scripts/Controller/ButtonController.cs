@@ -9,6 +9,7 @@ public class ButtonController : MonoBehaviour
     public Button exchangeButton;
 
     public static event Action DiscardCardEvent;
+    public static event Action ExchangeCardEvent;
 
     // Start is called before the first frame update
     void Start()
@@ -49,5 +50,7 @@ public class ButtonController : MonoBehaviour
     {
         Debug.Log("Ich möchte eine Karte tauschen");
         HidePlayerButton();
+
+        ExchangeCardEvent?.Invoke();
     }
 }
