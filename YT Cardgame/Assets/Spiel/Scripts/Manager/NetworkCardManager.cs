@@ -18,6 +18,7 @@ public class NetworkCardManager : NetworkBehaviour
         CardController.OnCardClickedEvent += SetEnemyCardClickedClientRpc;
         CardController.OnGraveyardCardClickedEvent += MoveGraveyardCardToEnemyDrawnPosClientRpc;
         ButtonController.DiscardCardEvent += MoveEnemyCardToGraveyardPos;
+        ButtonController.ExchangeCardEvent += ExchangeCardsClientRpc;
     }
 
     public override void OnDestroy()
@@ -29,6 +30,7 @@ public class NetworkCardManager : NetworkBehaviour
         CardController.OnCardClickedEvent -= SetEnemyCardClickedClientRpc;
         CardController.OnGraveyardCardClickedEvent -= MoveGraveyardCardToEnemyDrawnPosClientRpc;
         ButtonController.DiscardCardEvent -= MoveEnemyCardToGraveyardPos;
+        ButtonController.ExchangeCardEvent -= ExchangeCardsClientRpc;
     }
 
     private void HandleCardDeckClicked()
@@ -117,7 +119,8 @@ public class NetworkCardManager : NetworkBehaviour
     private void SetEnemyCardClickedClientRpc(bool isSelected, int index)
     {
         if (IsServer && !IsHost) return;
-        _cardManager.SetEnemyCardClicked(isSelected, index);
+        _cardManager.SetEnemyCardOutline(isSelected, index);
+        _cardManager.SetEnemyClickedCardIndex(isSelected, index);
     }
 
     [Rpc(SendTo.ClientsAndHost)]
@@ -147,5 +150,11 @@ public class NetworkCardManager : NetworkBehaviour
     private void MoveEnemyCardToGraveyardPosClientRpc(int cardNumber)
     {
         _cardManager.MoveEnemyDrawnCardToGraveyardPos(cardNumber);
+    }
+
+    [Rpc(SendTo.NotMe)]
+    private void ExchangeCardsClientRpc()
+    {
+        _cardManager.ExchangeEnemyCards();
     }
 }
