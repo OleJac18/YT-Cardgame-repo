@@ -3165,6 +3165,10 @@ MonoBehaviour:
   _graveyardCard: {fileID: 0}
   _drawnCard: {fileID: 0}
   _playerClickedCards: 
+<<<<<<< Updated upstream
+=======
+  _enemyClickedCards: 
+>>>>>>> Stashed changes
 --- !u!4 &1935967951
 Transform:
   m_ObjectHideFlags: 0

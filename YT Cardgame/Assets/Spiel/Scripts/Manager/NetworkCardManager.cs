@@ -71,7 +71,10 @@ public class NetworkCardManager : NetworkBehaviour
                     Debug.Log("Kartenstapel ist leer.");
                 }
             }
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
             UpdatePlayerCardsServerRpc(clientId, playerCards);
             SpawnCardsClientRpc(playerCards, RpcTarget.Single(clientId, RpcTargetUse.Temp));
         }
@@ -79,6 +82,7 @@ public class NetworkCardManager : NetworkBehaviour
 
     public void ExchangeButtonClicked()
     {
+<<<<<<< Updated upstream
         if (_cardManager.IsAnyCardSelected())
         {
             HidePlayerButtonEvent?.Invoke();
@@ -88,10 +92,14 @@ public class NetworkCardManager : NetworkBehaviour
         {
             Debug.Log("Es wurde keine Karte zum Tauschen angeklickt!");
         }
+=======
+        HandleCardExchangeClickedServerRpc(NetworkManager.Singleton.LocalClientId);
+>>>>>>> Stashed changes
     }
 
     private void ProcessSelectedCards(int[] cards)
     {
+<<<<<<< Updated upstream
         if (_cardManager.AreSelectedCardsEqual(cards))
         {
             int[] newPlayerCards = _cardManager.UpdatePlayerCards(cards);
@@ -109,6 +117,22 @@ public class NetworkCardManager : NetworkBehaviour
     }
 
 
+=======
+        int[] newPlayersCards = _cardManager.UpdatePlayerCards(cards);
+        UpdatePlayerCardsServerRpc(NetworkManager.Singleton.LocalClientId, newPlayersCards);
+
+        _cardManager.ExchangePlayerCards();
+        ExchangeEnemyCardsClientRpc();
+    }
+
+
+    [Rpc(SendTo.Server)]
+    private void UpdatePlayerCardsServerRpc(ulong clientId, int[] cards)
+    {
+        GameManager.Instance.SetPlayerCards(clientId, cards.ToList<int>());
+    }
+
+>>>>>>> Stashed changes
     [Rpc(SendTo.SpecifiedInParams)]
     private void SpawnCardsClientRpc(int[] playerCards, RpcParams rpcParams = default)
     {
@@ -191,7 +215,11 @@ public class NetworkCardManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.NotMe)]
+<<<<<<< Updated upstream
     private void ExchangeEnemyCardsClientRpc(int[] cards)
+=======
+    private void ExchangeEnemyCardsClientRpc()
+>>>>>>> Stashed changes
     {
         _cardManager.ExchangeEnemyCards(cards);
     }
@@ -206,5 +234,11 @@ public class NetworkCardManager : NetworkBehaviour
     private void HandleCardExchangeClickedServerRpc(ulong clientId)
     {
         GameManager.Instance.GetPlayerCardsAndProcessSelectedCards(clientId);
+    }
+
+    [Rpc(SendTo.Server)]
+    private void HandleCardExchangeClickedServerRpc(ulong clientId)
+    {
+        GameManager.Instance.GetPlayerCardsAndProcessSelectedCards(clientId); 
     }
 }

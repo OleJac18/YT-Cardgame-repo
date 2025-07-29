@@ -54,6 +54,8 @@ public class CardManager : MonoBehaviour
         CardController.OnCardClickedEvent -= SetPlayerClickedCardIndex;
     }
 
+    #region Basic functions
+
     public int DrawTopCard()
     {
         return _cardStack.DrawTopCard();
@@ -65,39 +67,12 @@ public class CardManager : MonoBehaviour
         return controller.CardNumber;
     }
 
-    public void SpawnAndMoveCardToPlayerDrawnCardPos(int cardNumber, bool flipAtDestination)
-    {
-        SpawnAndMoveCardToDrawnCardPos(cardNumber, _playerDrawnCardPos.transform, flipAtDestination);
-    }
-
-    public void SpawnAndMoveCardToEnemyDrawnCardPos(int cardNumber, bool flipAtDestination)
-    {
-        SpawnAndMoveCardToDrawnCardPos(cardNumber, _enemyDrawnCardPos.transform, flipAtDestination);
-    }
-
-    private void SpawnAndMoveCardToDrawnCardPos(int cardNumber, Transform target, bool flipAtDestination)
-    {
-        // Spawned die oberste Karte vom Kartenstapel
-        _cardDeckCard = SpawnCard(cardNumber, _spawnCardDeckPos, _spawnCardDeckPos.transform.parent, Card.DeckType.CARDDECK, true, false, false);
-
-        if (flipAtDestination)
-        {
-            FlipAndMoveCard(_cardDeckCard, target);
-        }
-        else
-        {
-            MoveToDrawnPosition(_cardDeckCard, target, false);
-        }
-
-
-    }
-
     public void ServFirstCards(int[] playerCards)
     {
         for (int i = 0; i < 4; i++)
         {
             // Spawned die Spielerkarten
-            SpawnCard(playerCards[i], _spawnCardPlayerPos, _spawnCardPlayerPos.transform, Card.DeckType.PLAYERCARD, false, true, true);
+            SpawnCard(playerCards[i], _spawnCardPlayerPos, _spawnCardPlayerPos.transform, Card.DeckType.PLAYERCARD, true, true, true);
 
             // Spawned die Gegnerkarten
             SpawnCard(99, _spawnCardEnemyPos, _spawnCardEnemyPos.transform, Card.DeckType.ENEMYCARD, true, false, false);
@@ -155,6 +130,37 @@ public class CardManager : MonoBehaviour
         controller.isSelectable = isSelectable;
 
         return spawnCard;
+    }
+
+    #endregion
+
+    #region Bewegung der _cardDeckCard zur _drawnCardPos
+
+    public void SpawnAndMoveCardToPlayerDrawnCardPos(int cardNumber, bool flipAtDestination)
+    {
+        SpawnAndMoveCardToDrawnCardPos(cardNumber, _playerDrawnCardPos.transform, flipAtDestination);
+    }
+
+    public void SpawnAndMoveCardToEnemyDrawnCardPos(int cardNumber, bool flipAtDestination)
+    {
+        SpawnAndMoveCardToDrawnCardPos(cardNumber, _enemyDrawnCardPos.transform, flipAtDestination);
+    }
+
+    private void SpawnAndMoveCardToDrawnCardPos(int cardNumber, Transform target, bool flipAtDestination)
+    {
+        // Spawned die oberste Karte vom Kartenstapel
+        _cardDeckCard = SpawnCard(cardNumber, _spawnCardDeckPos, _spawnCardDeckPos.transform.parent, Card.DeckType.CARDDECK, true, false, false);
+
+        if (flipAtDestination)
+        {
+            FlipAndMoveCard(_cardDeckCard, target);
+        }
+        else
+        {
+            MoveToDrawnPosition(_cardDeckCard, target, false);
+        }
+
+
     }
 
     private void FlipAndMoveCard(GameObject objectToMove, Transform target)
@@ -240,6 +246,10 @@ public class CardManager : MonoBehaviour
         controller.isSelectable = false;
     }
 
+    #endregion
+
+    #region DiscardCard
+
     public void MovePlayerDrawnCardToGraveyardPos()
     {
         CardController controller = _drawnCard.GetComponent<CardController>();
@@ -276,6 +286,32 @@ public class CardManager : MonoBehaviour
 
             EndTurnEvent?.Invoke();
         });
+    }
+
+#endregion
+
+    #region ExchangeCards
+
+    public int[] UpdatePlayerCards(int[] cards)
+    {
+        List<int> newCardsList = new List<int>();
+        bool addedClickedCard = false;
+
+        for (int i = 0; i < cards.Length; i++)
+        {
+            if (!_playerClickedCards[i])
+            {
+                newCardsList.Add(cards[i]);
+            }
+            else if (!addedClickedCard)
+            {
+                CardController controller = _drawnCard.GetComponent<CardController>();
+                newCardsList.Add(controller.CardNumber);
+                addedClickedCard = true;
+            }
+        }
+
+        return newCardsList.ToArray();
     }
 
     private void SetPlayerClickedCardIndex(bool isSelected, int index)
@@ -359,7 +395,11 @@ public class CardManager : MonoBehaviour
         return true;
     }
 
+<<<<<<< Updated upstream
     private void ResetClickedCards(bool[] clickedCards)
+=======
+    public void ExchangePlayerCards()
+>>>>>>> Stashed changes
     {
         Array.Fill(clickedCards, false);
     }
@@ -445,4 +485,6 @@ public class CardManager : MonoBehaviour
             });
         });
     }
+
+    #endregion
 }

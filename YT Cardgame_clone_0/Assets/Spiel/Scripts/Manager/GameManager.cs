@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using Unity.Collections.LowLevel.Unsafe;
 using Unity.Netcode;
 using UnityEngine;
 
 public class GameManager : NetworkBehaviour
 {
     public static event Action<List<ulong>, ulong> ServFirstCardsEvent;
+    public static event Action<int[]> ProcessSelectedCardsEvent;
 
     private PlayerManager _playerManager;
     private TurnManager _turnManager;
@@ -115,9 +117,14 @@ public class GameManager : NetworkBehaviour
         ProcessSelectedCardsClientRpc(cards.ToArray(), RpcTarget.Single(clientId, RpcTargetUse.Temp));
     }
 
+<<<<<<< Updated upstream
 
     [Rpc(SendTo.SpecifiedInParams)]
     public void ProcessSelectedCardsClientRpc(int[] cards, RpcParams rpcParams = default)
+=======
+    [Rpc(SendTo.SpecifiedInParams)]
+    private void ProcessSelectedCardsClientRpc(int[] cards, RpcParams rpcParams = default)
+>>>>>>> Stashed changes
     {
         ProcessSelectedCardsEvent?.Invoke(cards);
     }

@@ -44,10 +44,21 @@ public class PlayerManager
         return players.ToArray();
     }
 
+<<<<<<< Updated upstream
+=======
+    public void SetPlayerCards(ulong clientId, List<int> cards)
+    {
+        _playerDataDict[clientId].cards = new List<int>(cards);
+        Debug.Log("ID: " + clientId);
+        Debug.Log("Neue Kartenliste im PlayerManager: " + string.Join(", ", _playerDataDict[clientId].cards));
+    }
+
+>>>>>>> Stashed changes
     public List<int> GetPlayerCards(ulong clientId)
     {
         return _playerDataDict[clientId].cards;
     }
+<<<<<<< Updated upstream
 
     public void SetPlayerCards(ulong clientId, List<int> cards)
     {
@@ -58,4 +69,6 @@ public class PlayerManager
         Debug.Log("ID: " + clientId);
         Debug.Log("Neue Kartenliste im PlayerManager: " + string.Join(", ", _playerDataDict[clientId].cards));
     }
+=======
+>>>>>>> Stashed changes
 }
