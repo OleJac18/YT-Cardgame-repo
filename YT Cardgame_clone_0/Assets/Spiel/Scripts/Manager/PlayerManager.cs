@@ -43,4 +43,16 @@ public class PlayerManager
         List<Player> players = new List<Player>(_playerDataDict.Values);
         return players.ToArray();
     }
+
+    public void SetPlayerCards(ulong clientId, List<int> cards)
+    {
+        _playerDataDict[clientId].cards = new List<int>(cards);
+
+        Debug.Log("ID: " + clientId + " , neue Kartenliste im PlayerManager: " + string.Join(", ", _playerDataDict[clientId].cards));
+    }
+
+    public List<int> GetPlayerCards(ulong clientId)
+    {
+        return _playerDataDict[clientId].cards;
+    }
 }

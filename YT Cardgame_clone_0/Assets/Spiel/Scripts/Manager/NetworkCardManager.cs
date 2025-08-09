@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -18,7 +19,8 @@ public class NetworkCardManager : NetworkBehaviour
         CardController.OnCardClickedEvent += SetEnemyCardClickedClientRpc;
         CardController.OnGraveyardCardClickedEvent += MoveGraveyardCardToEnemyDrawnPosClientRpc;
         ButtonController.DiscardCardEvent += MoveEnemyCardToGraveyardPos;
-        ButtonController.ExchangeCardEvent += ExchangeCardsClientRpc;
+        ButtonController.ExchangeCardEvent += ExchangeButtonClicked;
+        GameManager.ProcessSelectedCardsEvent += ProcessSelectedCards;
     }
 
     public override void OnDestroy()
@@ -30,7 +32,8 @@ public class NetworkCardManager : NetworkBehaviour
         CardController.OnCardClickedEvent -= SetEnemyCardClickedClientRpc;
         CardController.OnGraveyardCardClickedEvent -= MoveGraveyardCardToEnemyDrawnPosClientRpc;
         ButtonController.DiscardCardEvent -= MoveEnemyCardToGraveyardPos;
-        ButtonController.ExchangeCardEvent -= ExchangeCardsClientRpc;
+        ButtonController.ExchangeCardEvent -= ExchangeButtonClicked;
+        GameManager.ProcessSelectedCardsEvent -= ProcessSelectedCards;
     }
 
     private void HandleCardDeckClicked()
@@ -67,8 +70,25 @@ public class NetworkCardManager : NetworkBehaviour
                 }
             }
 
+            UpdatePlayerCardsServerRpc(clientId, playerCards);
             SpawnCardsClientRpc(playerCards, RpcTarget.Single(clientId, RpcTargetUse.Temp));
         }
+    }
+
+    public void ExchangeButtonClicked()
+    {
+        HandleCardExchangeClickedServerRpc(NetworkManager.Singleton.LocalClientId);
+    }
+
+    private void ProcessSelectedCards(int[] cards)
+    {
+        ExchangeEnemyCardsClientRpc();
+    }
+
+    [Rpc(SendTo.Server)]
+    private void UpdatePlayerCardsServerRpc(ulong clientId, int[] cards)
+    {
+        GameManager.Instance.SetPlayerCards(clientId, cards.ToList<int>());
     }
 
     [Rpc(SendTo.SpecifiedInParams)]
@@ -153,8 +173,14 @@ public class NetworkCardManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.NotMe)]
-    private void ExchangeCardsClientRpc()
+    private void ExchangeEnemyCardsClientRpc()
     {
         _cardManager.ExchangeEnemyCards();
+    }
+
+    [Rpc(SendTo.Server)]
+    private void HandleCardExchangeClickedServerRpc(ulong clientId)
+    {
+        GameManager.Instance.GetPlayerCardsAndProcessSelectedCards(clientId);
     }
 }

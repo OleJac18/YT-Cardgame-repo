@@ -98,7 +98,7 @@ public class CardManager : MonoBehaviour
         for (int i = 0; i < 4; i++)
         {
             // Spawned die Spielerkarten
-            SpawnCard(playerCards[i], _spawnCardPlayerPos, _spawnCardPlayerPos.transform, Card.DeckType.PLAYERCARD, false, true, true);
+            SpawnCard(playerCards[i], _spawnCardPlayerPos, _spawnCardPlayerPos.transform, Card.DeckType.PLAYERCARD, true, true, true);
 
             // Spawned die Gegnerkarten
             SpawnCard(99, _spawnCardEnemyPos, _spawnCardEnemyPos.transform, Card.DeckType.ENEMYCARD, true, false, false);
@@ -338,6 +338,11 @@ public class CardManager : MonoBehaviour
 
                 _selectedCard.transform.SetParent(_graveyardPos.transform);
                 controller.SetCorrespondingDeck(Card.DeckType.GRAVEYARD);
+
+                if (controller.GetCardBackImageVisibility())
+                {
+                    controller.FlipCardAnimation(false);
+                }
             });
         }
     }
@@ -361,6 +366,7 @@ public class CardManager : MonoBehaviour
             CardController controller = _drawnCard.GetComponent<CardController>();
             Card.DeckType corresDeck = isCurrentPlayer ? Card.DeckType.PLAYERCARD : Card.DeckType.ENEMYCARD;
             controller.SetCorrespondingDeck(corresDeck);
+            controller.FlipCardAnimation(true);
 
             _drawnCard = null;
 

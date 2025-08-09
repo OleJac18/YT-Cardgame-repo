@@ -6,6 +6,7 @@ using UnityEngine;
 public class GameManager : NetworkBehaviour
 {
     public static event Action<List<ulong>, ulong> ServFirstCardsEvent;
+    public static event Action<int[]> ProcessSelectedCardsEvent;
 
     private PlayerManager _playerManager;
     private TurnManager _turnManager;
@@ -99,5 +100,22 @@ public class GameManager : NetworkBehaviour
             _turnManager.NextTurn();
             currentPlayerId.Value = _turnManager.GetCurrentPlayerId();
         }
+    }
+
+    public void SetPlayerCards(ulong clientId, List<int> cards)
+    {
+        _playerManager.SetPlayerCards(clientId, cards);
+    }
+
+    public void GetPlayerCardsAndProcessSelectedCards(ulong clientId)
+    {
+        List<int> cards = _playerManager.GetPlayerCards(clientId);
+        ProcessSelectedCardsClienRpc(cards.ToArray(), RpcTarget.Single(clientId, RpcTargetUse.Temp));
+    }
+
+    [Rpc(SendTo.SpecifiedInParams)]
+    public void ProcessSelectedCardsClienRpc(int[] cards, RpcParams rpcParams = default)
+    {
+        ProcessSelectedCardsEvent?.Invoke(cards);
     }
 }
