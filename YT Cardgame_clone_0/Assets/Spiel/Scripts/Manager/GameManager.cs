@@ -29,6 +29,7 @@ public class GameManager : NetworkBehaviour
     {
         ConnectionManager.ClientConnectedEvent += OnClientConnected;
         CardManager.EndTurnEvent += EndTurn;
+        ButtonController.EndGameButtonClickedEvent += OnEndGameButtonClickedServerRpc;
     }
 
     public override void OnDestroy()
@@ -36,6 +37,7 @@ public class GameManager : NetworkBehaviour
         base.OnDestroy();
         ConnectionManager.ClientConnectedEvent -= OnClientConnected;
         CardManager.EndTurnEvent -= EndTurn;
+        ButtonController.EndGameButtonClickedEvent -= OnEndGameButtonClickedServerRpc;
     }
 
     public override void OnNetworkSpawn()
@@ -117,5 +119,12 @@ public class GameManager : NetworkBehaviour
     public void ProcessSelectedCardsClienRpc(int[] cards, RpcParams rpcParams = default)
     {
         ProcessSelectedCardsEvent?.Invoke(cards);
+    }
+
+    [Rpc(SendTo.Server)]
+    private void OnEndGameButtonClickedServerRpc(ulong clientId)
+    {
+        _turnManager.OnEndGameButtonClicked(clientId);
+        EndTurn();
     }
 }
