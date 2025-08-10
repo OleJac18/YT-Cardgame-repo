@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
@@ -43,7 +44,6 @@ public class CardManager : MonoBehaviour
 
         CardController.OnGraveyardCardClickedEvent += MoveGraveyardCardToPlayerPos;
         ButtonController.DiscardCardEvent += MovePlayerDrawnCardToGraveyardPos;
-        ButtonController.ExchangeCardEvent += ExchangePlayerCards;
         CardController.OnCardClickedEvent += SetPlayerClickedCardIndex;
     }
 
@@ -51,7 +51,6 @@ public class CardManager : MonoBehaviour
     {
         CardController.OnGraveyardCardClickedEvent -= MoveGraveyardCardToPlayerPos;
         ButtonController.DiscardCardEvent -= MovePlayerDrawnCardToGraveyardPos;
-        ButtonController.ExchangeCardEvent -= ExchangePlayerCards;
         CardController.OnCardClickedEvent -= SetPlayerClickedCardIndex;
     }
 
@@ -299,29 +298,56 @@ public class CardManager : MonoBehaviour
         return -1;
     }
 
+    public int[] UpdatePlayerCards(int[] cards)
+    {
+        List<int> newCardsList = new List<int>();
+        bool addedClickedCard = false;
+
+        for (int i = 0; i < cards.Length; i++)
+        {
+            if (!_playerClickedCards[i])
+            {
+                newCardsList.Add(cards[i]);
+            } 
+            else if(!addedClickedCard)
+            {
+                CardController controller = _drawnCard.GetComponent<CardController>();
+                newCardsList.Add(controller.CardNumber);
+                addedClickedCard = true;
+            }
+        }
+
+        return newCardsList.ToArray();
+    }
+
     private void ResetClickedCards(bool[] _clickedCards)
     {
         Array.Fill(_clickedCards, false);
     }
 
-    private void ExchangePlayerCards()
+    public void ExchangePlayerCards(int[] cards)
     {
-        ExchangeCards(_spawnCardPlayerPos, _playerClickedCards);
+        ExchangeCards(_spawnCardPlayerPos, _playerClickedCards, cards);
     }
 
-    public void ExchangeEnemyCards()
+    public void ExchangeEnemyCards(int[] cards)
     {
-        ExchangeCards(_spawnCardEnemyPos, _enemyClickedCards);
+        ExchangeCards(_spawnCardEnemyPos, _enemyClickedCards, cards);
     }
 
-    private void ExchangeCards(GameObject playerPanel, bool[] clickedCards)
+    private void ExchangeCards(GameObject playerPanel, bool[] clickedCards, int[] cards)
     {
-        MovePlayerCardsToGraveyardPos(playerPanel, clickedCards);
+        MovePlayerCardsToGraveyardPos(playerPanel, clickedCards, cards);
         MoveDrawnCardToTarget(playerPanel, clickedCards);
     }
 
-    private void MovePlayerCardsToGraveyardPos(GameObject playerPanel, bool[] clickedCards)
+    private void MovePlayerCardsToGraveyardPos(GameObject playerPanel, bool[] clickedCards, int[] cards)
     {
+        int index = FindFirstTrueIndex(clickedCards);
+        if (index < 0) return;
+
+        int cardNumber = cards[index];
+
         Vector3 targetPos = GetCenteredPosition(_graveyardPos.transform);
 
         for (int i = 0; i < clickedCards.Length; i++)
@@ -331,6 +357,7 @@ public class CardManager : MonoBehaviour
             GameObject _selectedCard = playerPanel.transform.GetChild(i).gameObject;
             CardController controller = _selectedCard.GetComponent<CardController>();
             controller.SetOutline(false);
+            controller.CardNumber = cardNumber;
 
             LeanTween.move(_selectedCard, targetPos, 0.5f).setOnComplete(() =>
             {

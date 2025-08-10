@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class PlayerManager
@@ -24,7 +25,7 @@ public class PlayerManager
             ulong id = playerData.Key;
             Player player = playerData.Value;
 
-            Debug.Log("ID: " + id + ", Name: " + player.name + ", Level: " + player.score);
+            Debug.Log("ID: " + id + ", Name: " + player.name + ", Level: " + player.score + ", Karten: " + string.Join(", ", player.cards));
         }
     }
 

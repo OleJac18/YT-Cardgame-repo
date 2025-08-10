@@ -82,7 +82,11 @@ public class NetworkCardManager : NetworkBehaviour
 
     private void ProcessSelectedCards(int[] cards)
     {
-        ExchangeEnemyCardsClientRpc();
+        _cardManager.ExchangePlayerCards(cards);
+        ExchangeEnemyCardsClientRpc(cards);
+
+        int[] newPlayerCards = _cardManager.UpdatePlayerCards(cards);
+        UpdatePlayerCardsServerRpc(NetworkManager.Singleton.LocalClientId, newPlayerCards);
     }
 
     [Rpc(SendTo.Server)]
@@ -173,9 +177,9 @@ public class NetworkCardManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.NotMe)]
-    private void ExchangeEnemyCardsClientRpc()
+    private void ExchangeEnemyCardsClientRpc(int[] cards)
     {
-        _cardManager.ExchangeEnemyCards();
+        _cardManager.ExchangeEnemyCards(cards);
     }
 
     [Rpc(SendTo.Server)]
