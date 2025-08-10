@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +8,8 @@ using UnityEngine;
 public class NetworkCardManager : NetworkBehaviour
 {
     private CardManager _cardManager;
+
+    public static event Action HidePlayerButtonEvent;
 
     // Start is called before the first frame update
     void Start()
@@ -77,16 +80,34 @@ public class NetworkCardManager : NetworkBehaviour
 
     public void ExchangeButtonClicked()
     {
-        HandleCardExchangeClickedServerRpc(NetworkManager.Singleton.LocalClientId);
+        if (_cardManager.IsAnyCardSelected())
+        {
+            HidePlayerButtonEvent?.Invoke();
+            HandleCardExchangeClickedServerRpc(NetworkManager.Singleton.LocalClientId);
+        }
+        else
+        {
+            Debug.Log("Es wurde keine Karte zum Tauschen angeklickt.");
+        }
+        
     }
 
     private void ProcessSelectedCards(int[] cards)
     {
-        _cardManager.ExchangePlayerCards(cards);
-        ExchangeEnemyCardsClientRpc(cards);
+        if (_cardManager.AreSelectedCardsEqual(cards))
+        {
+            _cardManager.ExchangePlayerCards(cards);
+            ExchangeEnemyCardsClientRpc(cards);
 
-        int[] newPlayerCards = _cardManager.UpdatePlayerCards(cards);
-        UpdatePlayerCardsServerRpc(NetworkManager.Singleton.LocalClientId, newPlayerCards);
+            int[] newPlayerCards = _cardManager.UpdatePlayerCards(cards);
+            UpdatePlayerCardsServerRpc(NetworkManager.Singleton.LocalClientId, newPlayerCards);
+        }
+        else
+        {
+            _cardManager.MovePlayerDrawnCardToGraveyardPos();
+            MoveEnemyCardToGraveyardPos();
+        }
+        
     }
 
     [Rpc(SendTo.Server)]

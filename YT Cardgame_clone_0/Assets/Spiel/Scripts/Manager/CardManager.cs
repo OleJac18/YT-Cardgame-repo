@@ -27,6 +27,7 @@ public class CardManager : MonoBehaviour
 
     public static event Action ShowPlayerButtonEvent;
     public static event Action EndTurnEvent;
+    public static event Action ResetCardsStateEvent;
 
     // Start is called before the first frame update
     void Start()
@@ -253,6 +254,11 @@ public class CardManager : MonoBehaviour
 
     public void MoveDrawnCardToGraveyardPos(int cardNumber)
     {
+        ResetCardsStateEvent?.Invoke();
+
+        ResetClickedCards(_playerClickedCards);
+        ResetClickedCards(_enemyClickedCards);
+
         Vector3 targetPos = GetCenteredPosition(_graveyardPos.transform);
 
         LeanTween.move(_drawnCard, targetPos, 0.5f).setOnComplete(() =>
@@ -320,6 +326,40 @@ public class CardManager : MonoBehaviour
         return newCardsList.ToArray();
     }
 
+    public bool IsAnyCardSelected()
+    {
+        foreach (var clickedCard in _playerClickedCards)
+        {
+            if(clickedCard)
+                return true;
+        }
+
+        return false;
+    }
+
+    public bool AreSelectedCardsEqual(int[] cards)
+    {
+        int referenceCardNumber = -1;
+        
+        for (int i = 0; i < cards.Length; i++)
+        {
+            if (_playerClickedCards[i])
+            {
+                if (referenceCardNumber == -1)
+                {
+                    referenceCardNumber = cards[i];
+                }
+                else if (cards[i] != referenceCardNumber)
+                {
+                    Debug.Log("Die angeklickten Karten sind nicht gleich. Gezogene Karte wird abgelegt.");
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     private void ResetClickedCards(bool[] _clickedCards)
     {
         Array.Fill(_clickedCards, false);
@@ -337,6 +377,7 @@ public class CardManager : MonoBehaviour
 
     private void ExchangeCards(GameObject playerPanel, bool[] clickedCards, int[] cards)
     {
+        ResetCardsStateEvent?.Invoke();
         MovePlayerCardsToGraveyardPos(playerPanel, clickedCards, cards);
         MoveDrawnCardToTarget(playerPanel, clickedCards);
     }

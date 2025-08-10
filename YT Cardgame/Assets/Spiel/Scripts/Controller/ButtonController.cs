@@ -15,6 +15,7 @@ public class ButtonController : MonoBehaviour
     void Start()
     {
         CardManager.ShowPlayerButtonEvent += ShowPlayerButton;
+        NetworkCardManager.HidePlayerButtonEvent += HidePlayerButton;
 
         HidePlayerButton();
     }
@@ -22,6 +23,7 @@ public class ButtonController : MonoBehaviour
     void OnDestroy()
     {
         CardManager.ShowPlayerButtonEvent -= ShowPlayerButton;
+        NetworkCardManager.HidePlayerButtonEvent -= HidePlayerButton;
     }
 
     private void HidePlayerButton()
@@ -49,7 +51,6 @@ public class ButtonController : MonoBehaviour
     public void ExchangeButtonClicked()
     {
         Debug.Log("Ich möchte eine Karte tauschen");
-        HidePlayerButton();
 
         ExchangeCardEvent?.Invoke();
     }

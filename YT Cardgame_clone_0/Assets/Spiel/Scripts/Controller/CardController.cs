@@ -34,11 +34,13 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     private void Start()
     {
         GameManager.Instance.currentPlayerId.OnValueChanged += OnCurrentPlayerChanged;
+        CardManager.ResetCardsStateEvent += ResetCardState;
     }
 
     private void OnDestroy()
     {
         GameManager.Instance.currentPlayerId.OnValueChanged -= OnCurrentPlayerChanged;
+        CardManager.ResetCardsStateEvent -= ResetCardState;
     }
 
     public int CardNumber
@@ -86,10 +88,7 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         // Wenn nicht gehovert werden darf, return
         if (!canHover) return;
 
-        this.transform.localScale = _hoverScale;
-
-        int index = this.transform.GetSiblingIndex();
-        OnCardHoveredEvent?.Invoke(_hoverScale, index);
+        SetHoverState(_hoverScale);
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -97,10 +96,7 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
         // Wenn nicht gehovert werden darf, return
         if (!canHover) return;
 
-        this.transform.localScale = _originalScale;
-
-        int index = this.transform.GetSiblingIndex();
-        OnCardHoveredEvent?.Invoke(_originalScale, index);
+        SetHoverState(_originalScale);
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -166,5 +162,20 @@ public class CardController : MonoBehaviour, IPointerEnterHandler, IPointerExitH
     public void SetOutline(bool visible)
     {
         _outline.enabled = visible;
+    }
+
+    private void SetHoverState(Vector3 scale)
+    {
+        this.transform.localScale = scale;
+
+        int index = this.transform.GetSiblingIndex();
+        OnCardHoveredEvent?.Invoke(scale, index);
+    }
+
+    private void ResetCardState()
+    {
+        SetInteractableState(false);
+        SetOutline(false);
+        SetHoverState(_originalScale);
     }
 }
