@@ -7,6 +7,7 @@ public class GameManager : NetworkBehaviour
 {
     public static event Action<List<ulong>, ulong> ServFirstCardsEvent;
     public static event Action<int[]> ProcessSelectedCardsEvent;
+    public static event Action<ulong, int> OnUpdateScoreUiEvent;
 
     private PlayerManager _playerManager;
     private TurnManager _turnManager;
@@ -104,6 +105,24 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    public void EndGame()
+    {
+        _playerManager.CalculatePlayerScores();
+        UpdateScoreForAllPlayer();
+    }
+
+    private void UpdateScoreForAllPlayer()
+    {
+        Dictionary<ulong, Player> _playerDataDict = _playerManager.GetPlayerDataDict();
+
+        foreach(KeyValuePair<ulong, Player> playerData in _playerDataDict)
+        {
+            Player player = playerData.Value;
+
+            UpdateScoreClientRpc(player);
+        }
+    }
+
     public void SetPlayerCards(ulong clientId, List<int> cards)
     {
         _playerManager.SetPlayerCards(clientId, cards);
@@ -126,5 +145,11 @@ public class GameManager : NetworkBehaviour
     {
         _turnManager.OnEndGameButtonClicked(clientId);
         EndTurn();
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void UpdateScoreClientRpc(Player player)
+    {
+        OnUpdateScoreUiEvent?.Invoke(player.id, player.score);
     }
 }

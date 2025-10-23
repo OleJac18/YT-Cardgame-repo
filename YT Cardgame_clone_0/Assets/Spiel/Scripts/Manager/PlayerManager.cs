@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.PackageManager;
 using UnityEngine;
 
@@ -55,5 +56,21 @@ public class PlayerManager
     public List<int> GetPlayerCards(ulong clientId)
     {
         return _playerDataDict[clientId].cards;
+    }
+
+    public void CalculatePlayerScores()
+    {
+        List<Player> playerList = new List<Player>(_playerDataDict.Values);
+        int lowestScore = playerList.Min(player => player.cards.Sum());
+
+        List<Player> playersWithLowestScore = playerList.Where(player => player.cards.Sum() == lowestScore).ToList();
+
+        foreach(Player player in playerList)
+        {
+            if (!playersWithLowestScore.Contains(player))
+            {
+                player.score += player.cards.Sum();
+            }
+        }
     }
 }

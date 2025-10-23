@@ -38,6 +38,7 @@ public class TurnManager
         if(_gameEndingPlayerId == _currentPlayerId)
         {
             Debug.Log("!!! DAS SPIEL IST BEENDET !!!");
+            GameManager.Instance.EndGame();
         }
 
         Debug.Log("Nächster Spieler: " + _currentPlayerId);
