@@ -8,6 +8,7 @@ public class GameManager : NetworkBehaviour
     public static event Action<List<ulong>, ulong> ServFirstCardsEvent;
     public static event Action<int[]> ProcessSelectedCardsEvent;
     public static event Action<ulong, int> OnUpdateScoreUiEvent;
+    public static event Action<Player[], Player> UpdateScoreScreenEvent;
 
     private PlayerManager _playerManager;
     private TurnManager _turnManager;
@@ -107,8 +108,12 @@ public class GameManager : NetworkBehaviour
 
     public void EndGame()
     {
-        _playerManager.CalculatePlayerScores();
+        Player[] players = _playerManager.GetAllPlayers();
+
+        Player winningPlayer = _playerManager.CalculatePlayerScores();
         UpdateScoreForAllPlayer();
+
+        DisplayScoreScreenClientsAndHostRpc(players, winningPlayer);
     }
 
     private void UpdateScoreForAllPlayer()
@@ -151,5 +156,11 @@ public class GameManager : NetworkBehaviour
     private void UpdateScoreClientRpc(Player player)
     {
         OnUpdateScoreUiEvent?.Invoke(player.id, player.score);
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void DisplayScoreScreenClientsAndHostRpc(Player[] players, Player winningPlayer)
+    {
+        UpdateScoreScreenEvent?.Invoke(players, winningPlayer);
     }
 }

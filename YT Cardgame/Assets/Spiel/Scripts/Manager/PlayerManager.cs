@@ -58,7 +58,7 @@ public class PlayerManager
         return _playerDataDict[clientId].cards;
     }
 
-    public void CalculatePlayerScores()
+    public Player CalculatePlayerScores()
     {
         List<Player> playerList = new List<Player>(_playerDataDict.Values);
         int lowestScore = playerList.Min(player => player.cards.Sum());
@@ -72,5 +72,7 @@ public class PlayerManager
                 player.score += player.cards.Sum();
             }
         }
+
+        return playersWithLowestScore[0];
     }
 }
