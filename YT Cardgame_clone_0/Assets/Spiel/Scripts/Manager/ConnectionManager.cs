@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 public class ConnectionManager : MonoBehaviour
 {
     public static event Action<ulong> ClientConnectedEvent;
+    private string gameplaySceneName = "Gameplay";
 
     private void Awake()
     {
@@ -18,6 +19,7 @@ public class ConnectionManager : MonoBehaviour
         NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnectedCallback;
         NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnectedCallback;
         NetworkManager.Singleton.OnServerStopped += OnServerStopped;
+        GameManager.RestartGameEvent += LoadGameplayScene;
     }
 
     private void OnDestroy()
@@ -28,6 +30,8 @@ public class ConnectionManager : MonoBehaviour
             NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnectedCallback;
             NetworkManager.Singleton.OnServerStopped -= OnServerStopped;
         }
+
+        GameManager.RestartGameEvent -= LoadGameplayScene;
     }
 
     private void OnClientConnectedCallback(ulong clientId)
@@ -53,6 +57,11 @@ public class ConnectionManager : MonoBehaviour
     {
         Debug.Log("Server stopped");
         SceneManager.LoadScene("MainMenu");
+    }
+
+    private void LoadGameplayScene()
+    {
+        NetworkManager.Singleton.SceneManager.LoadScene(gameplaySceneName, LoadSceneMode.Single);
     }
 
 }

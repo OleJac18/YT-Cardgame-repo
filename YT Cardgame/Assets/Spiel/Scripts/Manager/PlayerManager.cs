@@ -46,6 +46,11 @@ public class PlayerManager
         return players.ToArray();
     }
 
+    public int GetPlayerCount()
+    {
+        return _playerDataDict.Count;
+    }
+
     public void SetPlayerCards(ulong clientId, List<int> cards)
     {
         _playerDataDict[clientId].cards = new List<int>(cards);

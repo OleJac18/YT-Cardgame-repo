@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -9,12 +10,15 @@ public class GameManager : NetworkBehaviour
     public static event Action<int[]> ProcessSelectedCardsEvent;
     public static event Action<ulong, int> OnUpdateScoreUiEvent;
     public static event Action<Player[], Player> UpdateScoreScreenEvent;
+    public static event Action RestartGameEvent;
 
     private PlayerManager _playerManager;
     private TurnManager _turnManager;
     private NetworkPlayerUIManager _networkPlayerUIManager;
 
     public NetworkVariable<ulong> currentPlayerId = new NetworkVariable<ulong>();
+    private int readyPlayer;
+
     public static GameManager Instance { get; private set; }
 
     private void Awake()
@@ -32,6 +36,7 @@ public class GameManager : NetworkBehaviour
         ConnectionManager.ClientConnectedEvent += OnClientConnected;
         CardManager.EndTurnEvent += EndTurn;
         ButtonController.EndGameButtonClickedEvent += OnEndGameButtonClickedServerRpc;
+        ScoreScreenController.OnNextRoundButtonClickedEvent += OnNextRoundButtonClickedServerRpc;
     }
 
     public override void OnDestroy()
@@ -40,6 +45,7 @@ public class GameManager : NetworkBehaviour
         ConnectionManager.ClientConnectedEvent -= OnClientConnected;
         CardManager.EndTurnEvent -= EndTurn;
         ButtonController.EndGameButtonClickedEvent -= OnEndGameButtonClickedServerRpc;
+        ScoreScreenController.OnNextRoundButtonClickedEvent -= OnNextRoundButtonClickedServerRpc;
     }
 
     public override void OnNetworkSpawn()
@@ -116,6 +122,15 @@ public class GameManager : NetworkBehaviour
         DisplayScoreScreenClientsAndHostRpc(players, winningPlayer);
     }
 
+    private IEnumerator Restart()
+    {
+        yield return new WaitForSeconds(1f);
+
+        RestartGameEvent?.Invoke();
+
+        Debug.Log("Eine neue Runde wird gestartet.");
+    }
+
     private void UpdateScoreForAllPlayer()
     {
         Dictionary<ulong, Player> _playerDataDict = _playerManager.GetPlayerDataDict();
@@ -162,5 +177,21 @@ public class GameManager : NetworkBehaviour
     private void DisplayScoreScreenClientsAndHostRpc(Player[] players, Player winningPlayer)
     {
         UpdateScoreScreenEvent?.Invoke(players, winningPlayer);
+    }
+
+
+    [Rpc(SendTo.Server)]
+    private void OnNextRoundButtonClickedServerRpc()
+    {
+        readyPlayer++;
+
+        int totalPlayers = _playerManager.GetPlayerCount();
+
+        if(readyPlayer >= totalPlayers)
+        {
+            readyPlayer = 0;
+
+            StartCoroutine(Restart());
+        }
     }
 }
