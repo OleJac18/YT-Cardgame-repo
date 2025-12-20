@@ -33,19 +33,26 @@ public class GameManager : NetworkBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        ConnectionManager.ClientConnectedEvent += OnClientConnected;
+        NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
         CardManager.EndTurnEvent += EndTurn;
         ButtonController.EndGameButtonClickedEvent += OnEndGameButtonClickedServerRpc;
         ScoreScreenController.OnNextRoundButtonClickedEvent += OnNextRoundButtonClickedServerRpc;
+        ConnectionManager.AlLClientsConnectedAndSceneLoadedEvent += InitializeGame;
     }
 
     public override void OnDestroy()
     {
         base.OnDestroy();
-        ConnectionManager.ClientConnectedEvent -= OnClientConnected;
+
+        if(NetworkManager.Singleton != null)
+        {
+            NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
+        }
+        
         CardManager.EndTurnEvent -= EndTurn;
         ButtonController.EndGameButtonClickedEvent -= OnEndGameButtonClickedServerRpc;
         ScoreScreenController.OnNextRoundButtonClickedEvent -= OnNextRoundButtonClickedServerRpc;
+        ConnectionManager.AlLClientsConnectedAndSceneLoadedEvent -= InitializeGame;
     }
 
     public override void OnNetworkSpawn()
@@ -71,22 +78,14 @@ public class GameManager : NetworkBehaviour
         if (!NetworkManager.Singleton.IsServer) return;
 
         _playerManager.AddNewPlayer(clientId);
-
-        if (CheckAllClientsConnected())
-        {
-            InitializeGame();
-        }
-    }
-
-    private bool CheckAllClientsConnected()
-    {
-        List<ulong> clientIds = _playerManager.GetConnectedClientIds();
-
-        return clientIds.Count < 2 ? false : true;
     }
 
     private void InitializeGame()
     {
+        if(!IsServer) return;
+
+        currentPlayerId.Value = 50;
+
         _networkPlayerUIManager = FindObjectOfType<NetworkPlayerUIManager>();
 
         _turnManager.SetStartPlayer(_playerManager);

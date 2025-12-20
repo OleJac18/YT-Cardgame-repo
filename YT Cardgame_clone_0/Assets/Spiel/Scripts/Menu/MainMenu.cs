@@ -1,20 +1,34 @@
+using System;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class MainMenu : MonoBehaviour
 {
-    private string gameplaySceneName = "Gameplay";
+    public static event Action HostSuccessfullyStartedEvent;
+
+
     public void StartHost()
     {
-        NetworkManager.Singleton.StartHost();
-        NetworkManager.Singleton.SceneManager.LoadScene(gameplaySceneName, LoadSceneMode.Single);
+        bool success = false;
+
+        success = NetworkManager.Singleton.StartHost();
+
+        if (success)
+        {
+            HostSuccessfullyStartedEvent?.Invoke();
+        }
     }
 
     public void StartServer()
     {
-        NetworkManager.Singleton.StartServer();
-        NetworkManager.Singleton.SceneManager.LoadScene(gameplaySceneName, LoadSceneMode.Single);
+        bool success = false;
+
+        success = NetworkManager.Singleton.StartServer();
+
+        if (success)
+        {
+            HostSuccessfullyStartedEvent?.Invoke();
+        }
     }
 
     public void StartClient()
